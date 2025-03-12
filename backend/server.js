@@ -38,7 +38,7 @@ mongoose.connect(process.env.MONGODB_URI)
 // ROUTES
 //---------------------------
 app.get('/', (req, res) => {
-    res.send('Server is running...');
+    res.send('Server is running....');
 });
 
 
