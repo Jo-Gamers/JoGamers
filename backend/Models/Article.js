@@ -9,6 +9,8 @@ const articleSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    tags: [String],
+    categories: [String],
     publishedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Publisher",
@@ -18,6 +20,7 @@ const articleSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    images: [String],
     likes: [
         {
             type: mongoose.Schema.Types.ObjectId,
