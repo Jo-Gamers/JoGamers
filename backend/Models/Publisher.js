@@ -23,5 +23,5 @@ const publisherSchema = new mongoose.Schema({
     ],
 });
 
-const Publisher = mongoose.model("Publisher", publisherSchema);
+const Publisher = mongoose.model('Publisher', publisherSchema);
 module.exports = Publisher;

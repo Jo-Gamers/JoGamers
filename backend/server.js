@@ -7,7 +7,7 @@ const dotenv       = require('dotenv');
 const cors         = require('cors');
 const morgan       = require('morgan');
 const cookieParser = require("cookie-parser");
-
+const articleRoutes = require('./Routes/articleRoute');
 
 //---------------------------
 // Middleware
@@ -17,7 +17,7 @@ const app = express();
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
-const corsOptions = { origin: 'http://localhost:5173', credentials: true, };
+const corsOptions = { origin: 'http://localhost:5175', credentials: true, };
 app.use(cors(corsOptions));
 
 
@@ -37,11 +37,9 @@ mongoose.connect(process.env.MONGODB_URI)
 //---------------------------
 // ROUTES
 //---------------------------
-app.get('/', (req, res) => {
-    res.send('Server is running....');
-});
 
 
+app.use("/api/articles", articleRoutes);
 //---------------------------
 // ERROR HANDLERS
 //---------------------------
