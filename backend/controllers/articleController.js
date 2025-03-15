@@ -1,5 +1,5 @@
 const cloudinary = require('cloudinary').v2;
-const Article = require('../models/Article');
+const Article = require('../Models/Article');
 const Publisher = require('../Models/Publisher');
 require('dotenv').config();
 
@@ -44,8 +44,9 @@ exports.createArticle = async (req, res) => {
 exports.getArticles = async (req, res) => {
     try {
         const articles = await Article.find()
-            .populate('publishedBy', 'name')
-            .exec();
+          .sort({ createdAt: -1 })
+          .populate("publishedBy", "name")
+          .exec();
         res.status(200).json({ articles });
     } catch (err) {
         console.error(err);
