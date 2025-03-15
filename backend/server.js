@@ -8,6 +8,7 @@ const cors         = require('cors');
 const morgan       = require('morgan');
 const cookieParser = require("cookie-parser");
 const articleRoutes = require('./Routes/articleRoute');
+const upcomingGameRoute = require("./Routes/upcomingGameRoute");  // Import the new routes
 
 //---------------------------
 // Middleware
@@ -17,7 +18,7 @@ const app = express();
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
-const corsOptions = { origin: ['http://localhost:5173', 'http://localhost:5175'], credentials: true, };
+const corsOptions = { origin: 'http://localhost:5173', credentials: true, };
 app.use(cors(corsOptions));
 
 
@@ -40,6 +41,8 @@ mongoose.connect(process.env.MONGODB_URI)
 
 
 app.use("/api/articles", articleRoutes);
+app.use("/api/upcoming-releases", upcomingGameRoute);
+
 //---------------------------
 // ERROR HANDLERS
 //---------------------------
