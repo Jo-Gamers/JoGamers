@@ -8,8 +8,8 @@ const cors         = require('cors');
 const morgan       = require('morgan');
 const cookieParser = require("cookie-parser");
 const articleRoutes = require('./Routes/articleRoute');
-const upcomingGameRoute = require("./Routes/upcomingGameRoute");  // Import the new routes
-
+const upcomingGameRoute = require("./Routes/upcomingGameRoute");  
+const gamingRoute = require('./Routes/gamingRoute');  
 //---------------------------
 // Middleware
 //---------------------------
@@ -18,7 +18,7 @@ const app = express();
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
-const corsOptions = { origin: 'http://localhost:5174', credentials: true, };
+const corsOptions = { origin: 'http://localhost:5173', credentials: true, };
 app.use(cors(corsOptions));
 
 
@@ -44,6 +44,8 @@ app.use("/api/articles", articleRoutes);
 app.use("/api/upcoming-releases", upcomingGameRoute);
 app.use("/api/contact",require("./Routes/contactRoute"));
 app.use("/api/user", require("./Routes/userRoute"));
+app.use('/api/', gamingRoute);
+
 //---------------------------
 // ERROR HANDLERS
 //---------------------------

@@ -16,6 +16,7 @@ import Footer from "./components/footer/Footer";
 import EditRelease from "./components/publisher/EditRelease";
 import ArticleDetailsView from "./components/publisher/ArticleDetailsView";
 import GamingAPIComponent from "./components/publisher/GamingAPIComponent";
+import TopPlayedGamesComponent from "./components/publisher/TopPlayedGamesComponent";
 
 const App = () => {
   return (
@@ -34,6 +35,7 @@ const App = () => {
         <Route path="/upcoming-releases" element={<UpcomingReleases />} />
         <Route path="/edit-releases/:id" element={<EditRelease />} />
         <Route path="/games" element={<GamingAPIComponent />} /> 
+        <Route path="/top-played" element={<TopPlayedGamesComponent />} /> 
 
       </Routes>
       <Footer />
