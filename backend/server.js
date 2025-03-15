@@ -146,9 +146,9 @@ const cors         = require('cors');
 const morgan       = require('morgan');
 const cookieParser = require("cookie-parser");
 const articleRoutes = require('./Routes/articleRoute');
-const upcomingGameRoute = require("./Routes/upcomingGameRoute");  // Import the new routes
+const upcomingGameRoute = require("./Routes/upcomingGameRoute");  
+const gamingRoute = require('./Routes/gamingRoute');
 const userRoute = require("./Routes/userRoute");
-
 //---------------------------
 // Middleware
 //---------------------------
@@ -183,6 +183,8 @@ app.use("/api/articles", articleRoutes);
 app.use("/api/upcoming-releases", upcomingGameRoute);
 app.use("/api/contact",require("./Routes/contactRoute"));
 app.use("/api/users", userRoute);
+app.use('/api/', gamingRoute);
+
 //---------------------------
 // ERROR HANDLERS
 //---------------------------
