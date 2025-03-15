@@ -55,3 +55,54 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+// Get All Users
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password"); // Exclude password for security
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+};
+
+
+// Update User
+exports.updateUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { username, email, role } = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { username, email, role },
+      { new: true, runValidators: true }
+    ).select("-password"); // Exclude password
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update user" });
+  }
+};
+
+// Delete User
+exports.deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete user" });
+  }
+};
