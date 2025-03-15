@@ -18,6 +18,10 @@ const upcomingGameReleaseSchema = new mongoose.Schema({
         ref: "Publisher",
         required: true,
     },
+    featuredImage: {
+        type: String,
+        required: true,
+    },
 });
 
 const UpcomingGameRelease = mongoose.model("UpcomingGameRelease", upcomingGameReleaseSchema);
