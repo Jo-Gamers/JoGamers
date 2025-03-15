@@ -42,7 +42,8 @@ mongoose.connect(process.env.MONGODB_URI)
 
 app.use("/api/articles", articleRoutes);
 app.use("/api/upcoming-releases", upcomingGameRoute);
-
+app.use("/api/contact",require("./Routes/contactRoute"));
+app.use("/api/user", require("./Routes/userRoute"));
 //---------------------------
 // ERROR HANDLERS
 //---------------------------
