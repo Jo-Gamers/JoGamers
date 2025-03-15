@@ -33,7 +33,9 @@ const articleSchema = new mongoose.Schema({
             ref: "Comment",
         },
     ],
-});
+},
+{ timestamps: true }
+);
 
 // ADD - Like
 articleSchema.methods.addLike = function (userId) {

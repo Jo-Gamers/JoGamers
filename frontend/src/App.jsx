@@ -13,6 +13,8 @@ import Publisher from "./components/publisher/Publisher";
 import Register from "./components/register/Register";
 import UpcomingReleases from "./components/upcoming-releases/UpcomingReleases";
 import Footer from "./components/footer/Footer";
+import EditRelease from "./components/publisher/EditRelease";
+import ArticleDetailsView from "./components/publisher/ArticleDetailsView";
 
 const App = () => {
   return (
@@ -30,6 +32,9 @@ const App = () => {
         <Route path="/publisher" element={<Publisher />} />
         <Route path="/register" element={<Register />} />
         <Route path="/upcoming-releases" element={<UpcomingReleases />} />
+        <Route path="/edit-releases/:id" element={<EditRelease />} />
+        <Route path="/articles/:id" element={<ArticleDetailsView />} /> 
+
       </Routes>
       <Footer />
     </Router>

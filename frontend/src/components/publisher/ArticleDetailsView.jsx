@@ -1,7 +1,82 @@
-import React from "react";
+import { useParams } from "react-router-dom";  // Use to get the article ID from the URL
+import axios from "axios";
+import { useState, useEffect, useRef } from "react";
 
-const ArticleDetailsView = ({ isOpen, onClose, article }) => {
-    if (!isOpen || !article) return null;
+const ArticleDetailsView = () => {
+    const { id } = useParams();  // Capture the article ID from the URL
+    const [article, setArticle] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [updatedTitle, setUpdatedTitle] = useState("");
+    const [updatedContent, setUpdatedContent] = useState("");
+    const [updatedCategories, setUpdatedCategories] = useState("");
+    const [updatedTags, setUpdatedTags] = useState("");
+    const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        const fetchArticle = async () => {
+            if (!id) return;  // Check if ID exists
+            try {
+                const response = await axios.get(`http://localhost:5000/api/articles/${id}`);
+                setArticle(response.data.article);  // Save the fetched article
+            } catch (error) {
+                console.error("Error fetching article:", error);
+            }
+        };
+
+        fetchArticle();
+    }, [id]);  // Fetch article data whenever the ID changes
+
+    useEffect(() => {
+        if (article) {
+            setUpdatedTitle(article.title);
+            setUpdatedContent(article.content);
+            setUpdatedCategories(article.categories.join(", "));
+            setUpdatedTags(article.tags.join(", "));
+        }
+    }, [article]);
+
+    const handleUpdate = async () => {
+        console.log('Selected article:', article);
+
+        if (!article._id) {
+            console.error("Article ID is missing or invalid.");
+            return;
+        }
+
+        const updatedArticle = {
+            title: updatedTitle,
+            content: updatedContent,
+            categories: updatedCategories.split(",").map((cat) => cat.trim()),
+            tags: updatedTags.split(",").map((tag) => tag.trim()),
+        };
+
+        const formData = new FormData();
+        formData.append("title", updatedArticle.title);
+        formData.append("content", updatedArticle.content);
+        formData.append("categories", updatedArticle.categories);
+        formData.append("tags", updatedArticle.tags);
+
+        const imageFiles = fileInputRef.current?.files;
+        if (imageFiles && imageFiles.length > 0) {
+            Array.from(imageFiles).forEach(file => {
+                formData.append("images", file);
+            });
+        }
+
+        try {
+            await axios.put(`http://localhost:5000/api/articles/${article._id}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            setIsEditing(false);
+        } catch (error) {
+            console.error("Error updating article:", error);
+        }
+    };
+
+    if (!article) return <div>Loading...</div>;  // Render a loading state while fetching the article
 
     const getStatusBadge = (approved) => {
         return approved ? (
@@ -18,149 +93,78 @@ const ArticleDetailsView = ({ isOpen, onClose, article }) => {
     };
 
     return (
-        <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity duration-300"
-            onClick={onClose}
-        >
-            {/* Modal Content */}
-            <div
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col text-left transform transition-all overflow-hidden"
-                onClick={(e) => e.stopPropagation()}
-            >
+        <div className="container mx-auto px-4 py-8">
+            <div className="bg-white p-6 rounded-xl shadow-md">
                 {/* Header */}
-                <div className="relative p-6 border-b border-gray-100 bg-gradient-to-r from-blue-600 to-blue-400 rounded-t-2xl">
-                    <div className="absolute top-2 right-2">
-                        <button
-                            onClick={onClose}
-                            className="p-2 bg-white/20 hover:bg-white/30 rounded-full text-white focus:outline-none transition-colors"
-                            aria-label="Close"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <h3 className="text-2xl font-bold text-white">Article Details</h3>
-                    <div className="flex items-center mt-2">
-                        <div className="flex items-center text-blue-100 text-sm">
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <span>{article.author}</span>
-                        </div>
-                        <div className="mx-2 text-blue-200">•</div>
-                        <div className="text-blue-100 text-sm">
-                            {getStatusBadge(article.approved)}
-                        </div>
-                    </div>
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-bold">{isEditing ? "Edit Article" : article.title}</h2>
+                    <button onClick={() => setIsEditing(!isEditing)} className="px-4 py-2 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 rounded-md">
+                        {isEditing ? "Cancel Edit" : "Edit"}
+                    </button>
                 </div>
 
-                {/* Body */}
-                <div className="px-6 py-6 overflow-y-auto flex-1 space-y-6">
-                    {/* Title */}
-                    <h4 className="text-2xl font-bold text-gray-800 border-b border-gray-100 pb-4">{article.title}</h4>
+                <div className="mt-4">
+                    <p>{getStatusBadge(article.approved)}</p>
+                </div>
 
-                    {/* Featured Image */}
-                    {article.featuredImage && (
-                        <div className="w-full">
-                            <img
-                                src={article.featuredImage}
-                                alt="Featured"
-                                className="w-full object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+                {/* Article content */}
+                <div className="mt-6">
+                    {isEditing ? (
+                        <div>
+                            <input
+                                type="text"
+                                value={updatedTitle}
+                                onChange={(e) => setUpdatedTitle(e.target.value)}
+                                className="w-full p-3 border border-gray-300 rounded-lg mb-4"
                             />
-                            <p className="text-xs text-gray-500 mt-2 italic">Featured image</p>
+                            <textarea
+                                value={updatedContent}
+                                onChange={(e) => setUpdatedContent(e.target.value)}
+                                className="w-full p-3 border border-gray-300 rounded-lg mb-4"
+                                rows="5"
+                            />
+                            <input
+                                type="text"
+                                value={updatedCategories}
+                                onChange={(e) => setUpdatedCategories(e.target.value)}
+                                className="w-full p-3 border border-gray-300 rounded-lg mb-4"
+                                placeholder="Categories (comma separated)"
+                            />
+                            <input
+                                type="text"
+                                value={updatedTags}
+                                onChange={(e) => setUpdatedTags(e.target.value)}
+                                className="w-full p-3 border border-gray-300 rounded-lg mb-4"
+                                placeholder="Tags (comma separated)"
+                            />
+                            <input type="file" ref={fileInputRef} multiple className="w-full p-3 border border-gray-300 rounded-lg" />
+                        </div>
+                    ) : (
+                        <div>
+                            <p>{article.content}</p>
+                            <div className="mt-4">
+                                <p><strong>Categories:</strong> {article.categories.join(", ")}</p>
+                                <p><strong>Tags:</strong> {article.tags.join(", ")}</p>
+                            </div>
                         </div>
                     )}
-
-                    {/* Content */}
-                    <div className="text-gray-700 bg-gray-50 p-4 rounded-lg border-l-4 border-blue-400">
-                        <p>{article.content}</p>
-                    </div>
-
-                    {/* Categories and Tags */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <p className="font-medium text-gray-700 mb-2 flex items-center">
-                                <svg className="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                </svg>
-                                Categories:
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                                {article.categories && article.categories.length > 0 ? (
-                                    article.categories.map((category, index) => (
-                                        <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                                            {category}
-                                        </span>
-                                    ))
-                                ) : (
-                                    <span className="text-gray-500 text-sm">No categories</span>
-                                )}
-                            </div>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <p className="font-medium text-gray-700 mb-2 flex items-center">
-                                <svg className="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                                </svg>
-                                Tags:
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                                {article.tags && article.tags.length > 0 ? (
-                                    article.tags.map((tag, index) => (
-                                        <span key={index} className="px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">
-                                            {tag}
-                                        </span>
-                                    ))
-                                ) : (
-                                    <span className="text-gray-500 text-sm">No tags</span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Timestamps */}
-                    <div className="grid grid-cols-2 gap-4 text-xs bg-gray-50 p-4 rounded-lg">
-                        <div>
-                            <p className="font-medium text-gray-700 flex items-center">
-                                <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                Created:
-                            </p>
-                            <p className="text-gray-600 mt-1">{new Date(article.createdAt).toLocaleString()}</p>
-                        </div>
-                        <div>
-                            <p className="font-medium text-gray-700 flex items-center">
-                                <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Updated:
-                            </p>
-                            <p className="text-gray-600 mt-1">{new Date(article.updatedAt).toLocaleString()}</p>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-gray-100 flex justify-between items-center bg-gray-50 rounded-b-2xl">
-                    <div className="text-xs text-gray-500">
-                        Article ID: {article.id || "N/A"}
-                    </div>
-                    <div className="flex gap-3">
-                        <button
-                            className="px-4 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium rounded-lg transition-colors"
-                        >
-                            Edit
-                        </button>
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 bg-white text-gray-700 hover:text-gray-900 font-medium rounded-lg hover:bg-gray-100 transition-colors shadow-sm border border-gray-200"
-                        >
-                            Close
-                        </button>
-                    </div>
+                <div className="mt-4 flex justify-between">
+                    <button
+                        onClick={handleUpdate}
+                        disabled={!isEditing}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:bg-gray-400"
+                    >
+                        Save Changes
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md"
+                    >
+                        Close
+                    </button>
                 </div>
             </div>
         </div>

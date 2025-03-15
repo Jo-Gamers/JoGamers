@@ -12,6 +12,13 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.0.13",
     "axios": "^1.8.3",
+    "draft-js": "^0.11.7",
+    "draft-js-export-html": "^1.4.1",
+    "draftjs-to-html": "^0.9.1",
+    "global": "^4.4.0",
+    "install": "^0.13.0",
+    "lucide-react": "^0.481.0",
+    "npm": "^11.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
