@@ -19,5 +19,6 @@ router.get("/",                articleController.getArticles);
 router.post("/create", upload, articleController.createArticle);
 router.put("/articles/:id", upload, articleController.updateArticle);
 router.get("/articles/:id", articleController.getArticleById);  // Fetch article by ID
+router.put("/:id/approve", articleController.approveArticle); //  approving articles
 
 module.exports = router;
