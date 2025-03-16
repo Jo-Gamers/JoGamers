@@ -12,7 +12,7 @@ router.get('/allNews', newsController.getAllNews);
 router.get('/allNews/:id', newsController.getNewsById);
 
 
-router.put('/news/:id', newsController.updateNews);
+router.put('/editnews/:id', newsController.updateNews);
 
 
 router.delete('/news/:id', newsController.deleteNews);
