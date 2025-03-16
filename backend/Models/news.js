@@ -14,7 +14,7 @@ const newsSchema = new mongoose.Schema({
     enum: ["FPS", "RPG", "Adventure", "Strategy", "Sports", "Hardware", "Indie", "Mobile", "Other"]
   },
   images: { type: [String], required: true },
-  readTime: { type: String, required: true },
+  readTime: { type: Number, required: true },
   featured: { type: Boolean, default: false },
   author: {
     type: mongoose.Schema.Types.ObjectId,
