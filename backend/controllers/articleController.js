@@ -1,129 +1,141 @@
-const cloudinary = require('cloudinary').v2;
-const Article = require('../Models/Article');
-const Publisher = require('../Models/Publisher');
-require('dotenv').config();
-
+const cloudinary = require("cloudinary").v2;
+const News = require('../models/news');
+const Publisher = require("../Models/Publisher");
+require("dotenv").config();
 
 cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-
+// Create News
 exports.createArticle = async (req, res) => {
-    try {
-        const { title, content, categories, tags } = req.body;
-        const images = [];
+  try {
+    const { title, excerpt, platform, category, readTime, content, featured } = req.body;
+    const images = [];
 
-        if (req.files && req.files.length > 0) {
-            for (let i = 0; i < req.files.length; i++) {
-                const result = await cloudinary.uploader.upload(req.files[i].path);
-                images.push(result.secure_url);
-            }
-        }
-
-        const userId = "67d18cd9b916d6dfdc44c9ac";
-        const newArticle = new Article({
-            title,
-            content,
-            tags: tags.split(","), 
-            categories,
-            publishedBy: userId,  
-            images: images,
-        });
-
-        await newArticle.save();
-        res.status(201).json({ message: "Article created successfully", article: newArticle });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Error creating article", error: err.message });
+    if (req.files && req.files.length > 0) {
+      for (let i = 0; i < req.files.length; i++) {
+        const result = await cloudinary.uploader.upload(req.files[i].path);
+        images.push(result.secure_url);
+      }
     }
+
+    // Use the current logged‑in user (set by your auth middleware)
+    const authorId = req.userId;
+    if (!authorId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    const newNews = new News({
+      title,
+      excerpt,
+      platform,
+      category,
+      readTime,
+      content,
+      featured: featured === "true" || featured === true,
+      images,
+      author: authorId,
+      approve: false,
+    });
+
+    await newNews.save();
+    res.status(201).json({ message: "News created successfully", news: newNews });
+  } catch (err) {
+    console.error("Error creating news:", err);
+    res.status(500).json({ message: "Error creating news", error: err.message });
+  }
 };
 
-exports.getArticles = async (req, res) => {
-    try {
-        const articles = await Article.find()
-          .sort({ createdAt: -1 })
-          .populate("publishedBy", "name")
-          .exec();
-        res.status(200).json({ articles });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Error fetching articles", error: err.message });
-    }
+// Get all news (for dashboard)
+exports.getAllArticle = async (req, res) => {
+  try {
+    const newsList = await News.find()
+      .sort({ createdAt: -1 })
+      .populate("author", "name")
+      .exec();
+    res.status(200).json({ news: newsList });
+  } catch (err) {
+    console.error("Error fetching news:", err);
+    res.status(500).json({ message: "Error fetching news", error: err.message });
+  }
 };
 
+// Get news by ID
 exports.getArticleById = async (req, res) => {
+  try {
     const { id } = req.params;
-
-    try {
-        const article = await Article.findById(id)
-            .populate("publishedBy", "name")  // If you want to populate the publisher details
-            .exec();
-
-        if (!article) {
-            return res.status(404).json({ message: "Article not found" });
-        }
-
-        res.status(200).json({ article });
-    } catch (err) {
-        console.error("Error fetching article:", err);
-        res.status(500).json({ message: "Error fetching article", error: err.message });
+    const newsItem = await News.findById(id)
+      .populate("author", "name")
+      .exec();
+    if (!newsItem) {
+      return res.status(404).json({ message: "News not found" });
     }
+    res.status(200).json({ news: newsItem });
+  } catch (err) {
+    console.error("Error fetching news:", err);
+    res.status(500).json({ message: "Error fetching news", error: err.message });
+  }
 };
 
-
-// Update Article
+// Update news
 exports.updateArticle = async (req, res) => {
-    try {
-        const { id } = req.params; // Get the article ID from the params
-        const { title, content, categories, tags } = req.body;
-        const updatedData = { title, content, categories, tags };
+  try {
+    const { id } = req.params;
+    const { title, excerpt, platform, category, readTime, content, featured } = req.body;
+    const updatedData = { title, excerpt, platform, category, readTime, content, featured };
 
-        // Check if any new images are uploaded
-        if (req.files && req.files.length > 0) {
-            const images = [];
-            for (let i = 0; i < req.files.length; i++) {
-                const result = await cloudinary.uploader.upload(req.files[i].path);
-                images.push(result.secure_url);
-            }
-            updatedData.images = images; // Update the images array
-        }
-
-        // Update the article
-        const updatedArticle = await Article.findByIdAndUpdate(id, updatedData, { new: true });
-
-        if (!updatedArticle) {
-            return res.status(404).json({ message: "Article not found" });
-        }
-
-        res.status(200).json({ message: "Article updated successfully", article: updatedArticle });
-    } catch (err) {
-        console.error("Error updating article:", err);
-        res.status(500).json({ message: "Error updating article", error: err.message });
+    // If new images are uploaded, update the images array.
+    if (req.files && req.files.length > 0) {
+      const images = [];
+      for (let i = 0; i < req.files.length; i++) {
+        const result = await cloudinary.uploader.upload(req.files[i].path);
+        images.push(result.secure_url);
+      }
+      updatedData.images = images;
     }
+
+    const updatedNews = await News.findByIdAndUpdate(id, updatedData, { new: true });
+    if (!updatedNews) {
+      return res.status(404).json({ message: "News not found" });
+    }
+    res.status(200).json({ message: "News updated successfully", news: updatedNews });
+  } catch (err) {
+    console.error("Error updating news:", err);
+    res.status(500).json({ message: "Error updating news", error: err.message });
+  }
 };
 
+// Delete news
+exports.deleteArticle = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedNews = await News.findByIdAndDelete(id);
+    if (!deletedNews) {
+      return res.status(404).json({ message: "News not found" });
+    }
+    res.status(200).json({ message: "News deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting news:", err);
+    res.status(500).json({ message: "Error deleting news", error: err.message });
+  }
+};
+
+// Approve news
 exports.approveArticle = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        const article = await Article.findById(id);
-        if (!article) {
-            return res.status(404).json({ message: "Article not found" });
-        }
-
-        article.approved = true; // Set approval to true
-        await article.save();
-
-        res.status(200).json({ message: "Article approved successfully", article });
-    } catch (err) {
-        console.error("Error approving article:", err);
-        res.status(500).json({ message: "Error approving article", error: err.message });
+  try {
+    const { id } = req.params;
+    const newsItem = await News.findById(id);
+    if (!newsItem) {
+      return res.status(404).json({ message: "News not found" });
     }
+    newsItem.approve = true;
+    await newsItem.save();
+    res.status(200).json({ message: "News approved successfully", news: newsItem });
+  } catch (err) {
+    console.error("Error approving news:", err);
+    res.status(500).json({ message: "Error approving news", error: err.message });
+  }
 };
-
-
-
-

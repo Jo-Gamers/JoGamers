@@ -2,7 +2,6 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 
-// Define a route for fetching top played games
 router.get('/top-played', async (req, res) => {
   try {
     const response = await axios.get("https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/");

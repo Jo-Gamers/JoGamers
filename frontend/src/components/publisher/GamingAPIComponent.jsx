@@ -9,6 +9,16 @@ const GamingAPIComponent = () => {
   const [sortBy, setSortBy] = useState("popularity");
   const [viewMode, setViewMode] = useState("grid");
 
+  // Color palette
+  const colors = {
+    background: "#EFF5F5",
+    secondaryBg: "#D6E4E5",
+    primary: "#497174",
+    accent: "#EB6440",
+    white: "#FFFFFF",
+    black: "#000000"
+  };
+
   useEffect(() => {
     const fetchGames = async () => {
       try {
@@ -56,10 +66,12 @@ const GamingAPIComponent = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
-        <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-t-4 border-t-orange-500 border-gray-200 rounded-full animate-spin"></div>
-          <p className="mt-4 text-lg font-medium text-gray-600">Loading the top games...</p>
+      <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: colors.background }}>
+        <div className="flex flex-col items-center p-8 rounded-xl shadow-lg" style={{ backgroundColor: colors.white }}>
+          <div className="w-16 h-16 border-4 border-t-4 rounded-full animate-spin" 
+               style={{ borderColor: colors.secondaryBg, borderTopColor: colors.accent }}></div>
+          <p className="mt-6 text-xl font-medium" style={{ color: colors.primary }}>Loading the top games...</p>
+          <p className="mt-2 text-sm" style={{ color: colors.primary }}>Getting the latest data for you</p>
         </div>
       </div>
     );
@@ -67,11 +79,16 @@ const GamingAPIComponent = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="p-8 bg-white rounded-lg shadow-lg">
-          <p className="text-center text-red-500 font-bold text-xl">{error}</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
+        <div className="p-10 rounded-xl shadow-xl max-w-md w-full" style={{ backgroundColor: colors.white }}>
+          <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center rounded-full" style={{ backgroundColor: colors.secondaryBg }}>
+            <span className="text-3xl" style={{ color: colors.accent }}>!</span>
+          </div>
+          <p className="text-center font-bold text-xl mb-4" style={{ color: colors.accent }}>{error}</p>
+          <p className="text-center mb-6" style={{ color: colors.primary }}>We couldn't connect to our game database. Please try again later.</p>
           <button 
-            className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 mx-auto block"
+            className="py-3 px-6 rounded-lg text-white font-medium w-full transition-all duration-300 hover:shadow-lg"
+            style={{ backgroundColor: colors.accent }}
             onClick={() => window.location.reload()}
           >
             Try Again
@@ -83,178 +100,202 @@ const GamingAPIComponent = () => {
 
   return (
     <>
-     <Navbar/ >
-    <div className="mt-15 min-h-screen bg-gray-50" style={{ backgroundColor: "#EFF5F5" }}>
-     
-      <header className=" bg-gray-800 text-white py-6 sticky" style={{ backgroundColor: "#497174" }}>
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold text-center">Top 50 Most Profitable Games</h1>
-          <p className="text-center mt-2 text-gray-300" style={{ color: "#D6E4E5" }}>The definitive ranking of gaming's biggest money-makers</p>
-        </div>
-      </header>
-
-      <div className="container mx-auto px-4 py-8 pt-32"> {/* Added padding top here */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <div className="mb-4 md:mb-0">
-            <span className="text-lg font-medium mr-2" style={{ color: "#497174" }}>Sort by:</span>
-            <div className="inline-flex rounded-md shadow-sm">
-              <button 
-                className={`px-4 py-2 text-sm font-medium rounded-l-lg ${sortBy === "popularity" ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-gray-100"}`} 
-                style={sortBy === "popularity" ? { backgroundColor: "#EB6440", color: "#FFFFFF" } : {}}
-                onClick={() => sortGames("popularity")}
-              >
-                Popularity
-              </button>
-              <button 
-                className={`px-4 py-2 text-sm font-medium ${sortBy === "rating" ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-gray-100"}`}
-                style={sortBy === "rating" ? { backgroundColor: "#EB6440", color: "#FFFFFF" } : {}}
-                onClick={() => sortGames("rating")}
-              >
-                Rating
-              </button>
-              <button 
-                className={`px-4 py-2 text-sm font-medium ${sortBy === "name" ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-gray-100"}`}
-                style={sortBy === "name" ? { backgroundColor: "#EB6440", color: "#FFFFFF" } : {}}
-                onClick={() => sortGames("name")}
-              >
-                Name
-              </button>
-              <button 
-                className={`px-4 py-2 text-sm font-medium rounded-r-lg ${sortBy === "release" ? "bg-orange-500 text-white" : "bg-white text-gray-700 hover:bg-gray-100"}`}
-                style={sortBy === "release" ? { backgroundColor: "#EB6440", color: "#FFFFFF" } : {}}
-                onClick={() => sortGames("release")}
-              >
-                Release Date
-              </button>
-            </div>
+      <div className="min-h-screen" style={{ backgroundColor: colors.background }}>
+      <Navbar />
+        <header className="mt-12 py-10 shadow-md" style={{ backgroundColor: colors.primary }}>
+          <div className="container mx-auto px-4">
+            <h1 className="text-4xl font-bold text-center" style={{ color: colors.white }}>Top 50 Most Rated Games</h1>
+            <p className="text-center mt-3 text-lg" style={{ color: colors.secondaryBg }}>Top Rated Games by Metacritic Website</p>
           </div>
-          <button 
-            className="px-4 py-2 bg-white text-gray-700 rounded-md shadow hover:bg-gray-100 flex items-center" 
-            onClick={toggleView}
-          >
-            <span className="mr-2">{viewMode === "grid" ? "List View" : "Grid View"}</span>
-            {viewMode === "grid" ? <List size={18} /> : <Grid size={18} />}
-          </button>
-        </div>
+        </header>
 
-        {viewMode === "grid" ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {games.map((game, index) => (
-              <div 
-                key={game.id} 
-                className="bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 ease-in-out"
-                style={{ backgroundColor: "#FFFFFF" }}
-              >
-                <div className="relative">
-                  <img
-                    src={game.background_image || "/api/placeholder/400/200"}
-                    alt={game.name}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div 
-                    className="absolute top-0 left-0 w-8 h-8 flex items-center justify-center text-white font-bold rounded-br-lg"
-                    style={{ backgroundColor: "#EB6440" }}
-                  >
-                    {index + 1}
-                  </div>
-                  {game.metacritic && (
-                    <div className="absolute bottom-2 right-2 px-2 py-1 bg-black bg-opacity-70 text-white text-sm rounded">
-                      {game.metacritic}
-                    </div>
-                  )}
-                </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-bold mb-2 truncate" style={{ color: "#497174" }}>{game.name}</h3>
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm" style={{ color: "#497174" }}>
-                      {game.released ? new Date(game.released).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' }) : "TBA"}
-                    </p>
-                    <div className="flex items-center">
-                      <Star size={16} fill="#FFD700" color="#FFD700" />
-                      <span className="ml-1 text-sm" style={{ color: "#497174" }}>
-                        {game.rating ? game.rating.toFixed(1) : "N/A"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {game.genres && game.genres.slice(0, 3).map(genre => (
-                      <span 
-                        key={genre.id} 
-                        className="px-2 py-1 text-xs rounded-full" 
-                        style={{ backgroundColor: "#D6E4E5", color: "#497174" }}
-                      >
-                        {genre.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+        <div className="container mx-auto px-4 py-10">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+            <div className="w-full md:w-auto">
+              <span className="text-lg font-medium block md:inline mb-2 md:mb-0 md:mr-3" style={{ color: colors.primary }}>Sort by:</span>
+              <div className="inline-flex rounded-lg shadow-md overflow-hidden">
+                <button 
+                  className="px-5 py-3 text-sm font-medium transition-colors duration-200"
+                  style={{ 
+                    backgroundColor: sortBy === "popularity" ? colors.accent : colors.white,
+                    color: sortBy === "popularity" ? colors.white : colors.primary 
+                  }}
+                  onClick={() => sortGames("popularity")}
+                >
+                  Popularity
+                </button>
+                <button 
+                  className="px-5 py-3 text-sm font-medium transition-colors duration-200"
+                  style={{ 
+                    backgroundColor: sortBy === "rating" ? colors.accent : colors.white,
+                    color: sortBy === "rating" ? colors.white : colors.primary 
+                  }}
+                  onClick={() => sortGames("rating")}
+                >
+                  Rating
+                </button>
+                <button 
+                  className="px-5 py-3 text-sm font-medium transition-colors duration-200"
+                  style={{ 
+                    backgroundColor: sortBy === "name" ? colors.accent : colors.white,
+                    color: sortBy === "name" ? colors.white : colors.primary 
+                  }}
+                  onClick={() => sortGames("name")}
+                >
+                  Name
+                </button>
+                <button 
+                  className="px-5 py-3 text-sm font-medium transition-colors duration-200"
+                  style={{ 
+                    backgroundColor: sortBy === "release" ? colors.accent : colors.white,
+                    color: sortBy === "release" ? colors.white : colors.primary 
+                  }}
+                  onClick={() => sortGames("release")}
+                >
+                  Release Date
+                </button>
               </div>
-            ))}
+            </div>
+            <button 
+              className="px-5 py-3 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 w-full md:w-auto"
+              style={{ backgroundColor: colors.white, color: colors.primary }}
+              onClick={toggleView}
+            >
+              <span className="mr-2 font-medium">{viewMode === "grid" ? "List View" : "Grid View"}</span>
+              {viewMode === "grid" ? <List size={18} /> : <Grid size={18} />}
+            </button>
           </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden" style={{ backgroundColor: "#FFFFFF" }}>
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="text-left" style={{ backgroundColor: "#497174", color: "#FFFFFF" }}>
-                <tr>
-                  <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider">Rank</th>
-                  <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider">Game</th>
-                  <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider">Release Date</th>
-                  <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider">Rating</th>
-                  <th className="px-6 py-3 text-xs font-medium uppercase tracking-wider">Genres</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {games.map((game, index) => (
-                  <tr key={game.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium" style={{ color: "#EB6440" }}>
+
+          {viewMode === "grid" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {games.map((game, index) => (
+                <div 
+                  key={game.id} 
+                  className="rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 ease-in-out"
+                  style={{ backgroundColor: colors.white }}
+                >
+                  <div className="relative">
+                    <img
+                      src={game.background_image || "/api/placeholder/400/200"}
+                      alt={game.name}
+                      className="w-full h-52 object-cover"
+                    />
+                    <div 
+                      className="absolute top-3 left-3 w-10 h-10 flex items-center justify-center text-white font-bold rounded-lg shadow-md"
+                      style={{ backgroundColor: colors.accent }}
+                    >
                       {index + 1}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 flex-shrink-0">
-                          <img 
-                            className="h-10 w-10 rounded-sm object-cover" 
-                            src={game.background_image || "/api/placeholder/40/40"} 
-                            alt={game.name} 
-                          />
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium" style={{ color: "#497174" }}>{game.name}</div>
-                        </div>
+                    </div>
+                    {game.metacritic && (
+                      <div className="absolute bottom-3 right-3 px-3 py-1 font-bold rounded-lg shadow-md"
+                           style={{ backgroundColor: colors.black, color: game.metacritic > 75 ? "#6bd425" : game.metacritic > 50 ? "#ffbd3f" : "#ff4545" }}>
+                        {game.metacritic}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: "#497174" }}>
-                      {game.released ? new Date(game.released).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' }) : "TBA"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
+                    )}
+                  </div>
+                  <div className="p-5">
+                    <h3 className="text-xl font-bold mb-3 truncate" style={{ color: colors.primary }}>{game.name}</h3>
+                    <div className="flex justify-between items-center mb-4">
+                      <p className="text-sm font-medium" style={{ color: colors.primary }}>
+                        {game.released ? new Date(game.released).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' }) : "TBA"}
+                      </p>
+                      <div className="flex items-center px-3 py-1 rounded-md" style={{ backgroundColor: colors.secondaryBg }}>
                         <Star size={16} fill="#FFD700" color="#FFD700" />
-                        <span className="ml-1 text-sm" style={{ color: "#497174" }}>
+                        <span className="ml-1 font-medium" style={{ color: colors.primary }}>
                           {game.rating ? game.rating.toFixed(1) : "N/A"}
                         </span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-wrap gap-1">
-                        {game.genres && game.genres.slice(0, 2).map(genre => (
-                          <span 
-                            key={genre.id} 
-                            className="px-2 py-1 text-xs rounded-full" 
-                            style={{ backgroundColor: "#D6E4E5", color: "#497174" }}
-                          >
-                            {genre.name}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {game.genres && game.genres.slice(0, 3).map(genre => (
+                        <span 
+                          key={genre.id} 
+                          className="px-3 py-1 text-xs rounded-full" 
+                          style={{ backgroundColor: colors.secondaryBg, color: colors.primary }}
+                        >
+                          {genre.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl shadow-lg overflow-hidden" style={{ backgroundColor: colors.white }}>
+              <table className="min-w-full divide-y" style={{ borderColor: colors.secondaryBg }}>
+                <thead style={{ backgroundColor: colors.primary }}>
+                  <tr>
+                    <th className="px-6 py-4 text-sm font-medium uppercase tracking-wider text-left" style={{ color: colors.white }}>Rank</th>
+                    <th className="px-6 py-4 text-sm font-medium uppercase tracking-wider text-left" style={{ color: colors.white }}>Game</th>
+                    <th className="px-6 py-4 text-sm font-medium uppercase tracking-wider text-left" style={{ color: colors.white }}>Release Date</th>
+                    <th className="px-6 py-4 text-sm font-medium uppercase tracking-wider text-left" style={{ color: colors.white }}>Rating</th>
+                    <th className="px-6 py-4 text-sm font-medium uppercase tracking-wider text-left" style={{ color: colors.white }}>Genres</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody className="divide-y" style={{ borderColor: colors.secondaryBg }}>
+                  {games.map((game, index) => (
+                    <tr key={game.id} className="transition-colors hover:bg-gray-50">
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold" style={{ backgroundColor: colors.accent, color: colors.white }}>
+                          {index + 1}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="h-12 w-12 flex-shrink-0">
+                            <img 
+                              className="h-12 w-12 rounded-md object-cover" 
+                              src={game.background_image || "/api/placeholder/50/50"} 
+                              alt={game.name} 
+                            />
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-md font-bold" style={{ color: colors.primary }}>{game.name}</div>
+                            {game.metacritic && (
+                              <div className="mt-1 inline-block px-2 py-1 text-xs font-medium rounded" 
+                                   style={{ 
+                                     backgroundColor: game.metacritic > 75 ? "#e6f5d0" : game.metacritic > 50 ? "#fff6e0" : "#ffeded",
+                                     color: game.metacritic > 75 ? "#5eb31b" : game.metacritic > 50 ? "#daa520" : "#d13030"
+                                   }}>
+                                Metacritic: {game.metacritic}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap text-sm" style={{ color: colors.primary }}>
+                        {game.released ? new Date(game.released).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' }) : "TBA"}
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <div className="flex items-center p-2 rounded" style={{ backgroundColor: colors.secondaryBg }}>
+                          <Star size={16} fill="#FFD700" color="#FFD700" />
+                          <span className="ml-1 font-medium" style={{ color: colors.primary }}>
+                            {game.rating ? game.rating.toFixed(1) : "N/A"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <div className="flex flex-wrap gap-2">
+                          {game.genres && game.genres.slice(0, 3).map(genre => (
+                            <span 
+                              key={genre.id} 
+                              className="px-3 py-1 text-xs rounded-full" 
+                              style={{ backgroundColor: colors.secondaryBg, color: colors.primary }}
+                            >
+                              {genre.name}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 };
