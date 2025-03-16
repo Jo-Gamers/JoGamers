@@ -361,7 +361,7 @@ const Articles = () => {
                       <div className="flex justify-between items-center">
                         <div className="flex items-center">
                           <div className="w-8 h-8 bg-[#497174] rounded-full flex items-center justify-center text-white text-sm">
-                            {article.author.charAt(0)}
+                            {article.author}
                           </div>
                           <span className="ml-2 text-sm text-gray-700">{article.date}</span>
                         </div>
@@ -381,7 +381,7 @@ const Articles = () => {
                   <div key={article.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="flex flex-col md:flex-row">
                       <div className="md:w-1/3 relative">
-                        <img src={article.image} alt={article.title} className="w-full h-full md:h-48 object-cover" />
+                        <img src={article.images} alt={article.title} className="w-full h-full md:h-48 object-cover" />
                         <div className="absolute top-2 left-2">
                           <span className="bg-[#EB6440] text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center">
                             {getCategoryIcon(article.category)} <span className="ml-1">{article.category}</span>

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from "../navbar/Navbar";
+import axios from 'axios';
 
 const ArticleDetails = () => {
   const { id } = useParams();
@@ -12,112 +13,30 @@ const ArticleDetails = () => {
   const [comments, setComments] = useState([]);
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [relatedArticles, setRelatedArticles] = useState([]);
-
-  // Fetch article data
+  
   useEffect(() => {
-    // Simulate API call with timeout
-    setTimeout(() => {
-      // Mock article data
-      const mockArticle = {
-        id: 1,
-        title: "Elden Ring DLC Announced: Shadow of the Erdtree",
-        excerpt: "FromSoftware reveals new expansion coming this summer with new bosses, areas, and weapons. Prepare to die again in the land of shadows.",
-        content: `
-          <p>FromSoftware and Bandai Namco have officially announced the highly anticipated DLC for Elden Ring, titled "Shadow of the Erdtree." Set to release in Summer 2025, this expansion promises to build upon the critically acclaimed base game with a wealth of new content.</p>
-          
-          <p>According to game director Hidetaka Miyazaki, the expansion will take players to a completely new region that wasn't accessible in the original game. "We wanted to create something that would surprise even veteran players of Elden Ring," Miyazaki stated in a press release. "The Land of Shadow exists as a dark reflection of the Lands Between, with its own history and inhabitants."</p>
-          
-          <h3>New Features</h3>
-          <p>The DLC is set to include:</p>
-          <ul>
-            <li>A vast new map area approximately 30% the size of the original game</li>
-            <li>Over 10 new boss encounters, including 5 major story bosses</li>
-            <li>Dozens of new weapons, armor sets, and spells</li>
-            <li>New enemy types and NPCs with their own questlines</li>
-            <li>Additional lore that expands on the enigmatic history of the Lands Between</li>
-          </ul>
-          
-          <p>The trailer showcased several intimidating new bosses, including a towering knight wielding a massive crystalline greatsword and what appears to be a corrupted version of a familiar character from the base game.</p>
-          
-          <h3>Continuing the Legacy</h3>
-          <p>Elden Ring has sold over 25 million copies since its release, becoming FromSoftware's most successful title to date. The game has received universal acclaim for its open-world design, challenging gameplay, and rich lore created in collaboration with fantasy author George R.R. Martin.</p>
-          
-          <p>The announcement comes as welcome news to the dedicated Elden Ring community, which has remained active with regular PvP events, speedrunning competitions, and lore discussions despite the game being out for over three years.</p>
-          
-          <h3>Availability and Pricing</h3>
-          <p>Shadow of the Erdtree will be available on all platforms that currently support Elden Ring: PC, PlayStation 5, PlayStation 4, Xbox Series X|S, and Xbox One. The expansion will be priced at $39.99, with a Digital Deluxe Edition available for $49.99 that includes a digital artbook and soundtrack.</p>
-          
-          <p>Pre-orders are set to go live next month, with early purchasers receiving an exclusive in-game weapon and armor set.</p>
-        `,
-        platform: "PC, PS5, Xbox",
-        category: "RPG",
-        images: [
-          "/api/placeholder/800/400",
-          "/api/placeholder/800/400",
-          "/api/placeholder/800/400",
-          "/api/placeholder/800/400"
-        ],
-        date: "March 10, 2025",
-        readTime: "8 min read",
-        author: "Alex Johnson",
-        authorImage: null,
-        tags: ["FromSoftware", "Elden Ring", "DLC", "RPG", "Action RPG"]
-      };
-
-      // Mock comments
-      const mockComments = [
-        {
-          id: 1,
-          author: "SoulsBorne_Fan",
-          content: "Can't wait for this DLC! Elden Ring is easily my GOTY for 2022, and I've been waiting for more content.",
-          date: "March 10, 2025",
-          likes: 24
-        },
-        {
-          id: 2,
-          author: "RPGLover42",
-          content: "I hope they include more magic options in this DLC. The base game had some great spells but I'd love to see more variety for pure caster builds.",
-          date: "March 11, 2025",
-          likes: 17
-        },
-        {
-          id: 3,
-          author: "GitGudGamer",
-          content: "The trailer looks amazing! That knight boss with the crystal sword is going to destroy us all...",
-          date: "March 11, 2025",
-          likes: 32
-        }
-      ];
-
-      // Mock related articles
-      const mockRelatedArticles = [
-        {
-          id: 2,
-          title: "FromSoftware Hints at New IP in Development",
-          image: "/api/placeholder/400/250",
-          category: "Industry News"
-        },
-        {
-          id: 3,
-          title: "Elden Ring Game of the Year Edition Announced",
-          image: "/api/placeholder/400/250",
-          category: "RPG"
-        },
-        {
-          id: 4,
-          title: "Top 10 Hardest Bosses in Soulsborne Games",
-          image: "/api/placeholder/400/250",
-          category: "Lists"
-        }
-      ];
-
-      setArticle(mockArticle);
-      setComments(mockComments);
-      setRelatedArticles(mockRelatedArticles);
-      setLoading(false);
-    }, 1000);
+    axios.get(`http://localhost:5000/api/news/allNews/${id}`)
+      .then(response => {
+        setArticle(response.data); 
+        setLoading(false); 
+      })
+      .catch(error => {
+        console.error("Error fetching article data:", error); 
+        setLoading(false); 
+      });
   }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#EFF5F5] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#497174] border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-[#497174] font-medium">Loading article...</p>
+        </div>
+      </div>
+    );
+  }
+
 
   // Handle image slider
   const nextSlide = () => {
@@ -173,16 +92,7 @@ const ArticleDetails = () => {
     return category ? category.icon : '📰';
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#EFF5F5] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#497174] border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-[#497174] font-medium">Loading article...</p>
-        </div>
-      </div>
-    );
-  }
+  
 
   return (
     <div className="min-h-screen bg-[#EFF5F5]">
@@ -337,7 +247,7 @@ const ArticleDetails = () => {
             <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: article.content }}></div>
             
             {/* Tags */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
+            {/* <div className="mt-8 pt-6 border-t border-gray-200">
               <h3 className="text-lg font-bold text-[#497174] mb-3">Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {article.tags.map((tag, index) => (
@@ -350,12 +260,12 @@ const ArticleDetails = () => {
                   </a>
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
         
         {/* Comments Section */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+        {/* <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
           <div className="p-6 md:p-8">
             <h2 className="text-2xl font-bold text-[#497174] mb-6 flex items-center">
               <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -364,7 +274,7 @@ const ArticleDetails = () => {
               Comments ({comments.length})
             </h2>
             
-            {/* Add Comment */}
+            
             <form onSubmit={handleCommentSubmit} className="mb-8">
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
@@ -395,7 +305,6 @@ const ArticleDetails = () => {
               </div>
             </form>
             
-            {/* Comments List */}
             <div className="space-y-6">
               {comments.map((comment) => (
                 <div key={comment.id} className="border-b border-gray-100 pb-6 last:border-0">
@@ -426,41 +335,8 @@ const ArticleDetails = () => {
               ))}
             </div>
           </div>
-        </div>
-        
-        {/* Related Articles */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-          <div className="p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-[#497174] mb-6 flex items-center">
-              <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
-              </svg>
-              Related Articles
-            </h2>
+        </div> */}
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {relatedArticles.map((article) => (
-                <a 
-                  key={article.id}
-                  href={`/article/${article.id}`}
-                  className="block bg-[#EFF5F5] rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-                >
-                  <div className="relative h-40">
-                    <img src={article.image} alt={article.title} className="w-full h-full object-cover" />
-                    <div className="absolute bottom-2 left-2">
-                      <span className="bg-white text-[#497174] text-xs font-bold px-2 py-1 rounded-full">
-                        {getCategoryIcon(article.category)} {article.category}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold text-[#497174] line-clamp-2">{article.title}</h3>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   );
