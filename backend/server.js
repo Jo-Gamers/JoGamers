@@ -10,6 +10,8 @@ const upcomingGameRoute = require("./Routes/upcomingGameRoute");
 const gamingRoute = require('./Routes/gamingRoute');
 const userRoute = require("./Routes/userRoute");
 const newsRoutes = require('./Routes/newsRoutes');
+const commentRoutes = require("./Routes/commentRoute");
+const likeBookmarkRoutes = require('./Routes/likeBookmarkRoutes');
 
 //---------------------------
 // Middleware
@@ -43,6 +45,9 @@ app.use("/api/upcoming-releases", upcomingGameRoute);
 app.use("/api/contact",require("./Routes/contactRoute"));
 app.use("/api/users", userRoute);
 app.use('/api/', gamingRoute);
+app.use('/api/news', newsRoutes);
+app.use("/api/comments", commentRoutes);
+app.use("/api/likeBookmark" , likeBookmarkRoutes);
 
 //---------------------------
 // ERROR HANDLERS

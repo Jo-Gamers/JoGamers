@@ -6,7 +6,7 @@ const newsSchema = new mongoose.Schema({
   platform: {
     type: String,
     required: true,
-    enum: ["PC", "PS4", "PS5", "Xbox", "Nintendo Switch", "other"], // Enum definition
+    enum: ["PC", "PS4", "PS5", "Xbox", "Nintendo Switch", "other"], 
   },
   category: {
     type: String,

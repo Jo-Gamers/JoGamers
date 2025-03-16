@@ -413,7 +413,7 @@ const Articles = () => {
                             </div>
                             
               <div className="flex space-x-3">
-                <button 
+                {/* <button 
                   onClick={toggleLike}
                   className={`p-2 rounded-full ${isLiked ? 'bg-[#EB6440] text-white' : 'bg-[#D6E4E5] text-[#497174]'}`}
                 >
@@ -428,7 +428,7 @@ const Articles = () => {
                   <svg className="w-5 h-5" fill={isBookmarked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                   </svg>
-                </button>
+                </button> */}
                 {/* <button className="p-2 rounded-full bg-[#D6E4E5] text-[#497174]">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>

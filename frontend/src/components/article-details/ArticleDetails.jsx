@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import Navbar from "../navbar/Navbar";
 import axios from 'axios';
 
+
 const ArticleDetails = () => {
   const { id } = useParams();
   const [article, setArticle] = useState(null);
@@ -13,7 +14,8 @@ const ArticleDetails = () => {
   const [comments, setComments] = useState([]);
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  
+
+
   useEffect(() => {
     axios.get(`http://localhost:5000/api/news/allNews/${id}`)
       .then(response => {
@@ -25,6 +27,52 @@ const ArticleDetails = () => {
         setLoading(false); 
       });
   }, [id]);
+
+  useEffect(() => {
+    axios
+      .get(`http://localhost:5000/api/likeBookmark/getArticleStatus/${id}`, { withCredentials: true })
+      .then(response => {
+        setIsLiked(response.data.isLiked); 
+        setIsBookmarked(response.data.isBookmarked); 
+      })
+      .catch(error => {
+        console.error("Error fetching article status:", error);
+      });
+  }, [id]);
+
+ useEffect(() => {
+    axios.get(`http://localhost:5000/api/comments/${id}`)
+      .then(response => {
+        setComments(response.data.comments); 
+      })
+      .catch(error => {
+        console.error("Error fetching comments:", error);
+      });
+  }, [id]);
+ 
+  
+  const handleCommentSubmit = (e) => {
+    e.preventDefault();
+    if (!comment.trim()) return; 
+
+    axios.post("http://localhost:5000/api/comments/add", 
+      {
+        articleId: id,
+        content: comment,
+        
+      },
+      { withCredentials: true } 
+    )
+    .then(response => {
+      setComments(prevComments => [...prevComments, response.data.comment]);  
+      setComment('');  
+      window.location.reload();
+    })
+    .catch(error => {
+      console.error("Error adding comment:", error);
+    });
+  };
+
 
   if (loading) {
     return (
@@ -47,30 +95,45 @@ const ArticleDetails = () => {
     setCurrentSlide((prev) => (prev === 0 ? article.images.length - 1 : prev - 1));
   };
 
-  // Handle comment submission
-  const handleCommentSubmit = (e) => {
-    e.preventDefault();
-    if (!comment.trim()) return;
-
-    const newComment = {
-      id: comments.length + 1,
-      author: "You",
-      content: comment,
-      date: new Date().toLocaleDateString(),
-      likes: 0
-    };
-
-    setComments([newComment, ...comments]);
-    setComment('');
-  };
-
-  // Toggle like/bookmark
   const toggleLike = () => {
-    setIsLiked(!isLiked);
+    axios
+      .post(
+        `http://localhost:5000/api/likeBookmark/like`,
+        { articleId: id },
+        { withCredentials: true }
+      )
+      .then(response => {
+        axios.get(`http://localhost:5000/api/likeBookmark/getArticleStatus/${id}`, { withCredentials: true })
+          .then(response => {
+            setIsLiked(response.data.isLiked);
+          })
+          .catch(error => {
+            console.error("Error fetching article status:", error);
+          });
+      })
+      .catch(error => {
+        console.error("Error toggling like:", error);
+      });
   };
-
+  
   const toggleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
+   axios.post('http://localhost:5000/api/likeBookmark/bookmark',
+         { articleId: id },
+          { withCredentials: true }
+        )
+      .then(response => {
+        
+        axios.get(`http://localhost:5000/api/likeBookmark/getArticleStatus/${id}`, { withCredentials: true })
+          .then(response => {
+            setIsBookmarked(response.data.isBookmarked);
+          })
+          .catch(error => {
+            console.error("Error fetching article status:", error);
+          });
+      })
+      .catch(error => {
+        console.error("Error toggling bookmark:", error);
+      });
   };
 
   // Get category icon
@@ -92,13 +155,13 @@ const ArticleDetails = () => {
     return category ? category.icon : '📰';
   };
 
-  
 
   return (
     <div className="min-h-screen bg-[#EFF5F5]">
       <Navbar />
       
       <main className="max-w-5xl mx-auto px-4 py-8 mt-15">
+
         {/* Breadcrumbs */}
         <div className="flex items-center text-sm text-gray-500 mb-6">
           <a href="/" className="hover:text-[#497174]">Home</a>
@@ -201,7 +264,7 @@ const ArticleDetails = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-[#497174] rounded-full flex items-center justify-center text-white text-lg">
-                  {article.author.charAt(0)}
+                {article.author ? article.author.charAt(0) : ''}
                 </div>
                 <div className="ml-3">
                   <p className="font-medium text-[#497174]">{article.author}</p>
@@ -246,96 +309,84 @@ const ArticleDetails = () => {
           <div className="p-6 md:p-8">
             <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: article.content }}></div>
             
-            {/* Tags */}
-            {/* <div className="mt-8 pt-6 border-t border-gray-200">
-              <h3 className="text-lg font-bold text-[#497174] mb-3">Tags</h3>
-              <div className="flex flex-wrap gap-2">
-                {article.tags.map((tag, index) => (
-                  <a 
-                    key={index}
-                    href={`/tag/${tag}`}
-                    className="px-3 py-1 bg-[#D6E4E5] text-[#497174] text-sm rounded-full hover:bg-[#497174] hover:text-white transition-colors"
-                  >
-                    {tag}
-                  </a>
-                ))}
-              </div>
-            </div> */}
           </div>
         </div>
         
-        {/* Comments Section */}
-        {/* <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-          <div className="p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-[#497174] mb-6 flex items-center">
-              <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-              </svg>
-              Comments ({comments.length})
-            </h2>
-            
-            
-            <form onSubmit={handleCommentSubmit} className="mb-8">
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-[#497174] rounded-full flex items-center justify-center text-white">
-                    Y
-                  </div>
-                </div>
-                <div className="flex-grow">
-                  <textarea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    className="w-full px-4 py-3 border border-[#D6E4E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#497174] min-h-24 bg-[#EFF5F5] resize-none"
-                    placeholder="Share your thoughts..."
-                  ></textarea>
-                  <div className="flex justify-end mt-3">
-                    <button 
-                      type="submit" 
-                      className="px-6 py-2 bg-[#EB6440] text-white rounded-lg hover:bg-opacity-90 transition-colors flex items-center"
-                    >
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                      </svg>
-                      Post Comment
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </form>
-            
-            <div className="space-y-6">
-              {comments.map((comment) => (
-                <div key={comment.id} className="border-b border-gray-100 pb-6 last:border-0">
-                  <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 bg-[#497174] rounded-full flex items-center justify-center text-white">
-                        {comment.author.charAt(0)}
-                      </div>
-                    </div>
-                    <div className="flex-grow">
-                      <div className="flex items-center mb-1">
-                        <h4 className="font-bold text-[#497174]">{comment.author}</h4>
-                        <span className="text-xs text-gray-500 ml-2">{comment.date}</span>
-                      </div>
-                      <p className="text-gray-700 mb-3">{comment.content}</p>
-                      <div className="flex items-center space-x-4">
-                        <button className="flex items-center text-gray-500 hover:text-[#EB6440]">
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                          </svg>
-                          <span>{comment.likes}</span>
-                        </button>
-                        <button className="text-gray-500 hover:text-[#497174]">Reply</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+ {/* Comment Section */}
+<div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+  <div className="p-6 md:p-8">
+    <h2 className="text-2xl font-bold text-[#497174] mb-6 flex items-center">
+      <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+      </svg>
+      Comments ({comments.length})
+    </h2>
+
+    <form onSubmit={handleCommentSubmit} className="mb-8">
+      <div className="flex items-start space-x-4">
+        <div className="flex-shrink-0">
+          <div className="w-10 h-10 bg-[#497174] rounded-full flex items-center justify-center text-white">
+            Y
           </div>
-        </div> */}
+        </div>
+        <div className="flex-grow">
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            className="w-full px-4 py-3 border border-[#D6E4E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#497174] min-h-24 bg-[#EFF5F5] resize-none"
+            placeholder="Share your thoughts..."
+          ></textarea>
+          <div className="flex justify-end mt-3">
+            <button 
+              type="submit" 
+              className="px-6 py-2 bg-[#EB6440] text-white rounded-lg hover:bg-opacity-90 transition-colors flex items-center"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+              Post Comment
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+                {/* Display Comments */}
+
+    <div className="space-y-6">
+  {comments.map((comment) => (
+    <div key={comment._id} className="border-b border-gray-100 pb-6 last:border-0">
+      <div className="flex items-start space-x-4">
+        <div className="flex-shrink-0">
+          <div className="w-10 h-10 bg-[#497174] rounded-full flex items-center justify-center text-white">
+            {comment.createdBy.username.charAt(0)}
+          </div>
+        </div>
+        <div className="flex-grow">
+          <div className="flex items-center mb-1">
+            <h4 className="font-bold text-[#497174]">{comment.createdBy.username}</h4>
+            <span className="text-xs text-gray-500 ml-2">{new Date(comment.createdAt).toLocaleDateString()}</span>
+          </div>
+          <p className="text-gray-700 mb-3">{comment.content}</p>
+          <div className="flex items-center space-x-4">
+            <button className="flex items-center text-gray-500 hover:text-[#EB6440]">
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+              </svg>
+              <span>{comment.likes || 0}</span>
+            </button>
+            <button className="text-gray-500 hover:text-[#497174]">Reply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+
+  </div>
+</div>
+
             
       </main>
     </div>

@@ -13,9 +13,13 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.0.13",
     "axios": "^1.8.3",
+<<<<<<< HEAD
+    "js-cookie": "^3.0.5",
+=======
     "install": "^0.13.0",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
+>>>>>>> 9a39457472680dae44aaff42e8d92fdbf30f780e
     "lucide-react": "^0.482.0",
     "npm": "^11.2.0",
     "react": "^19.0.0",
