@@ -1,97 +1,31 @@
 import React, {useState, useEffect } from 'react';
 import Navbar from "../navbar/Navbar";
+import axios from 'axios';
+import { Link } from 'react-router-dom';
+
 
 const Articles = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [viewMode, setViewMode] = useState('');
-  const [comments, setComments] = useState({});
+  // const [comments, setComments] = useState({});
  const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  
+  const [articles, setArticles] = useState([]);
 
-  // Sample article data
-  const articles = [
-    {
-      id: 1,
-      title: "Elden Ring DLC Announced",
-      excerpt: "FromSoftware reveals new expansion coming this summer with new bosses, areas, and weapons. Prepare to die again in the land of shadows.",
-      platform: "PC, PS5, Xbox",
-      category: "RPG",
-      image: "/api/placeholder/400/250",
-      date: "March 10, 2025",
-      readTime: "4 min read",
-      comments: 42,
-      featured: true,
-      author: "Alex Johnson"
-    },
-    {
-      id: 2,
-      title: "Nintendo Direct Reveals New Zelda",
-      excerpt: "New Legend of Zelda title teased for next holiday season with a completely reimagined art style and new mechanics never before seen in the series.",
-      platform: "Nintendo Switch",
-      category: "Adventure",
-      image: "/api/placeholder/400/250",
-      date: "March 8, 2025",
-      readTime: "3 min read",
-      comments: 37,
-      featured: false,
-      author: "Sarah Miller"
-    },
-    {
-      id: 3,
-      title: "PS5 Pro Specifications Leaked",
-      excerpt: "Documents reveal potential specs for the upcoming PS5 Pro including significantly improved ray tracing performance and native 4K at 60fps for all titles.",
-      platform: "PS5",
-      category: "Hardware",
-      image: "/api/placeholder/400/250",
-      date: "March 12, 2025",
-      readTime: "5 min read",
-      comments: 28,
-      featured: false,
-      author: "Michael Chen"
-    },
-    {
-      id: 4,
-      title: "Call of Duty Season 3 Update",
-      excerpt: "New maps and weapons coming to the latest CoD installment. The update also includes major balance changes and a completely revamped progression system.",
-      platform: "PC, PS5, Xbox",
-      category: "FPS",
-      image: "/api/placeholder/400/250",
-      date: "March 9, 2025",
-      readTime: "3 min read",
-      comments: 56,
-      featured: false,
-      author: "Emma Davis"
-    },
-    {
-      id: 5,
-      title: "Indie Game Festival Winners Announced",
-      excerpt: "This year's Indie Game Festival celebrates groundbreaking indie titles across multiple categories. See which games took home the prestigious awards.",
-      platform: "PC, PS4, Switch",
-      category: "Indie",
-      image: "/api/placeholder/400/250",
-      date: "March 7, 2025",
-      readTime: "6 min read",
-      comments: 19,
-      featured: false,
-      author: "Ryan Park"
-    },
-    {
-      id: 6,
-      title: "EA Sports FC 26 Trailer Breakdown",
-      excerpt: "A detailed analysis of the new EA Sports FC 26 trailer reveals improved physics, realistic crowd animations, and completely revamped career mode.",
-      platform: "PC, PS5, Xbox",
-      category: "Sports",
-      image: "/api/placeholder/400/250",
-      date: "March 11, 2025",
-      readTime: "4 min read",
-      comments: 33,
-      featured: true,
-      author: "Chris Rodriguez"
-    },
-  ];
+
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/news/allNews')
+      .then((response) => {
+        setArticles(response.data); 
+      })
+      .catch((error) => {
+        console.error("Error fetching articles:", error);
+      });
+  }, []);
+
+
   
   const platforms = ["PC", "PS4", "PS5", "Xbox", "Nintendo Switch"];
   
@@ -153,13 +87,13 @@ const Articles = () => {
     return category ? category.icon : '📰';
   };
 
-  const addComment = (id, comment) => {
-    if (!comment.trim()) return;
-    setComments((prev) => ({
-      ...prev,
-      [id]: prev[id] ? [...prev[id], comment] : [comment],
-    }));
-  };
+  // const addComment = (id, comment) => {
+  //   if (!comment.trim()) return;
+  //   setComments((prev) => ({
+  //     ...prev,
+  //     [id]: prev[id] ? [...prev[id], comment] : [comment],
+  //   }));
+  // };
 
 
   return (
@@ -185,7 +119,7 @@ const Articles = () => {
               <div key={article.id} className="bg-white rounded-xl shadow-lg overflow-hidden mb-10">
                 <div className="md:flex">
                   <div className="md:w-2/3 relative">
-                    <img src={article.image} alt={article.title} className="w-full h-full object-cover" />
+                    <img src={article.images} alt={article.title} className="w-full h-full object-cover" />
                     <div className="absolute top-4 left-4 bg-[#EB6440] text-white px-3 py-1 rounded-full text-sm font-bold">
                       Featured
                     </div>
@@ -204,19 +138,21 @@ const Articles = () => {
                     <div className="flex justify-between items-center mt-4">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-[#497174] rounded-full flex items-center justify-center text-white">
-                          {article.author.charAt(0)}
+                          {article.author}
                         </div>
                         <div className="ml-2">
                           <p className="text-sm font-medium">{article.author}</p>
                           <p className="text-xs text-gray-500">{article.date} • {article.readTime}</p>
                         </div>
                       </div>
+                      <Link to={`/news/${article._id}`} className="read-more">
                       <button className="px-4 py-2 bg-[#EB6440] text-white rounded-md hover:bg-opacity-90 flex items-center">
                         <span>Read</span>
                         <svg className="w-4 h-4 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M5 12h14M12 5l7 7-7 7"></path>
                         </svg>
                       </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -429,9 +365,11 @@ const Articles = () => {
                           </div>
                           <span className="ml-2 text-sm text-gray-700">{article.date}</span>
                         </div>
+                        <Link to={`/news/${article._id}`} className="read-more">
                         <button className="px-4 py-2 bg-[#D6E4E5] text-[#497174] font-medium rounded-md hover:bg-[#497174] hover:text-white transition-colors">
                           Read More
                         </button>
+                       </Link>
                       </div>
                     </div>
                   </div>
@@ -462,7 +400,7 @@ const Articles = () => {
                         <div className="flex justify-between items-center">
                           <div className="flex items-center">
                             <div className="w-8 h-8 bg-[#497174] rounded-full flex items-center justify-center text-white text-sm">
-                              {article.author.charAt(0)}
+                              {article.author}
                             </div>
                             <span className="ml-2 text-sm text-gray-700">{article.author}</span>
                           </div>
@@ -471,7 +409,7 @@ const Articles = () => {
                               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
                               </svg>
-                              {article.comments}
+                              {/* {article.comments} */}
                             </div>
                             
               <div className="flex space-x-3">
@@ -502,13 +440,16 @@ const Articles = () => {
                   </svg>
                 </button> */}
               </div>
-                          
+              <Link to={`/news/${article._id}`} className="read-more">
+
                             <button className="px-4 py-2 bg-[#D6E4E5] text-[#497174] font-medium rounded-md hover:bg-[#497174] hover:text-white transition-colors flex items-center">
                               <span>Read</span>
                               <svg className="w-4 h-4 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M5 12h14M12 5l7 7-7 7"></path>
                               </svg>
                             </button>
+                            </Link>
+
                           </div>
                         </div>
                       </div>
