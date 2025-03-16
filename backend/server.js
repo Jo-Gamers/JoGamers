@@ -39,14 +39,12 @@ mongoose.connect(process.env.MONGODB_URI)
 //---------------------------
 // ROUTES
 //---------------------------
-
-
-app.use("/api/articles", articleRoutes);
+app.use("/api/news/dash", articleRoutes);
 app.use("/api/upcoming-releases", upcomingGameRoute);
 app.use("/api/contact",require("./Routes/contactRoute"));
 app.use("/api/users", userRoute);
 app.use('/api/', gamingRoute);
-app.use('/api/news', newsRoutes);
+app.use("/api/news", newsRoutes);
 
 //---------------------------
 // ERROR HANDLERS
