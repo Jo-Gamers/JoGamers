@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 import { Clock, CheckCircle, Eye, Search, Filter, XCircle, ArrowUp } from "lucide-react";
+import Cookies from 'js-cookie';  // Ensure js-cookie is imported
+import * as jwt_decode from 'jwt-decode'; // Use named import with `*`
 
 const ArticlesDashboard = () => {
   const [newsList, setNewsList] = useState([]);
@@ -9,8 +11,29 @@ const ArticlesDashboard = () => {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const navigate = useNavigate(); // Replace useHistory with useNavigate
 
   useEffect(() => {
+    // Check if the token exists in the cookies and decode it
+    const token = Cookies.get('token');
+    console.log("Token:", token); // Log token to check if it's retrieved correctly
+    if (!token) {
+      // Redirect to login if no token is found
+      navigate('/login');
+      return;
+    }
+
+    // Decode the token using the `default` export
+    const decodedToken = jwt_decode.default(token); // Use `.default` to access the default export
+    console.log("Decoded Token:", decodedToken); // Log decoded token to check its contents
+
+    if (decodedToken.role !== 'publisher') {
+      // Redirect if the user is not a publisher
+      navigate('/login');
+      return;
+    }
+
+    // Fetch news if the user is a publisher
     const fetchNews = async () => {
       setIsLoading(true);
       try {
@@ -24,13 +47,14 @@ const ArticlesDashboard = () => {
     };
     fetchNews();
 
+    // Scroll event to show/hide the scroll-to-top button
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 300);
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [navigate]);
 
   const filteredNews = newsList.filter((news) => {
     const matchesFilter =

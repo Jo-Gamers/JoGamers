@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require("multer");
 const articleController = require("../controllers/articleController");
 const protect = require("../middlewares/authMiddleware");
+const authorize = require("../middlewares/authorizeMiddleware");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -14,11 +15,11 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage }).array("images", 10);
 
-router.get("/", articleController.getAllArticle);
-router.post("/create", protect, upload, articleController.createArticle);
+router.get("/",authorize('publisher'),  articleController.getAllArticle);
 router.get("/:id", articleController.getArticleById);
-router.put("/:id", protect, upload, articleController.updateArticle);
-router.delete("/:id", protect, articleController.deleteArticle);
-router.put("/:id/approve", protect, articleController.approveArticle);
+router.post("/create", protect, authorize('publisher'), upload, articleController.createArticle);
+router.put("/:id", protect, authorize('publisher'), upload, articleController.updateArticle);
+router.delete("/:id", protect, authorize('publisher'), articleController.deleteArticle);
+router.put("/:id/approve", protect, authorize('publisher'), articleController.approveArticle);
 
 module.exports = router;
