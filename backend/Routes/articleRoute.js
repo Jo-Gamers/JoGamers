@@ -17,6 +17,7 @@ const upload = multer({ storage: storage }).array("images", 10);
 
 router.get("/",                articleController.getArticles);
 router.post("/create", upload, articleController.createArticle);
-
+router.put("/articles/:id", upload, articleController.updateArticle);
+router.get("/articles/:id", articleController.getArticleById);  // Fetch article by ID
 
 module.exports = router;

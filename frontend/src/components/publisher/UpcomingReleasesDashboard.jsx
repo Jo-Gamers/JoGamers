@@ -1,57 +1,97 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { FaEdit, FaTrashAlt, FaPlus } from "react-icons/fa";  // Import the required React icons
 
 function UpcomingReleasesDashboard() {
     const [isHovered, setIsHovered] = useState(false);
+    const [releases, setReleases] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Fetch upcoming releases from the API
+    useEffect(() => {
+        const fetchReleases = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get("http://localhost:5000/api/upcoming-releases");
+                setReleases(response.data.upcomingGameReleases);
+                setError(null);
+            } catch (error) {
+                console.error("Error fetching upcoming releases:", error);
+                setError("Failed to load releases. Please try again later.");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchReleases();
+    }, []);
+
+    // Delete an upcoming game release
+    const deleteRelease = async (id) => {
+        if (!confirm("Are you sure you want to delete this release?")) return;
+        
+        try {
+            setLoading(true);
+            const response = await axios.delete(`http://localhost:5000/api/upcoming-releases/${id}`);
+            setReleases(releases.filter(release => release._id !== id));
+            showToast(response.data.message, "success");
+        } catch (error) {
+            console.error("Error deleting release:", error);
+            showToast("Error deleting the release", "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Simple toast function (you'd replace this with a proper toast component)
+    const showToast = (message, type) => {
+        console.log(`${type.toUpperCase()}: ${message}`);
+    };
+
+    // Redirect to the edit page
+    const editRelease = (id) => {
+        console.log(`Redirect to edit release with ID: ${id}`);
+        // Implement redirection to edit page or modal
+        window.location.href = `/edit-releases/${id}`;
+    };
+
+    // Format date in a more readable way
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
 
     return (
-        <div className="bg-gray-50 p-6 rounded-2xl">
+        <div className="bg-[#EFF5F5] p-6 rounded-2xl min-h-screen">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-800 border-b-4 border-green-500 pb-2 inline-block">
+                    <h2 className="text-3xl font-bold text-[#497174] border-b-4 border-[#EB6440] pb-2 inline-block">
                         Upcoming Releases
                     </h2>
-                    <p className="text-gray-500 mt-2">Plan and manage your product launch schedule</p>
+                    <p className="text-gray-600 mt-2">Plan and manage your product launch schedule</p>
                 </div>
                 <button
-                    className={`bg-gradient-to-r from-green-500 to-green-700 text-white px-6 py-3 rounded-lg shadow-lg font-medium flex items-center gap-2 transition-all duration-300 ${isHovered ? "translate-y-1 shadow-md" : ""}`}
+                    className={`bg-[#EB6440] hover:bg-[#d05a3a] text-white px-6 py-3 rounded-lg shadow-lg font-medium flex items-center gap-2 transition-all duration-300 ${isHovered ? "translate-y-1 shadow-md" : ""}`}
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
+                    onClick={() => window.location.href = "/create-release"}
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
+                    <FaPlus className="h-5 w-5" />
                     Schedule Release
                 </button>
             </div>
 
-            <div className="bg-white p-8 rounded-xl shadow-md border border-gray-100 transition-all duration-300 hover:shadow-lg">
+            <div className="bg-white p-8 rounded-xl shadow-md border border-[#D6E4E5] transition-all duration-300 hover:shadow-lg">
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-2">
-                        <div className="bg-green-100 p-2 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                <line x1="16" y1="2" x2="16" y2="6" />
-                                <line x1="8" y1="2" x2="8" y2="6" />
-                                <line x1="3" y1="10" x2="21" y2="10" />
-                            </svg>
+                        <div className="bg-[#497174] p-2 rounded-full">
+                            <FaPlus className="h-5 w-5 text-white" />
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-800">Release Calendar</h3>
+                        <h3 className="text-xl font-semibold text-[#497174]">Release Calendar</h3>
                     </div>
-                    <div className="flex gap-2">
-                        <button className="p-2 text-gray-500 hover:text-gray-800 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="11" cy="11" r="8" />
-                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                            </svg>
-                        </button>
-                        <button className="p-2 text-gray-500 hover:text-gray-800 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="1" />
-                                <circle cx="19" cy="12" r="1" />
-                                <circle cx="5" cy="12" r="1" />
-                            </svg>
-                        </button>
+                    
+                    <div className="text-sm text-[#497174] bg-[#D6E4E5] px-3 py-1 rounded-full">
+                        {releases.length} {releases.length === 1 ? 'Release' : 'Releases'}
                     </div>
                 </div>
 
@@ -59,39 +99,83 @@ function UpcomingReleasesDashboard() {
                     Manage upcoming releases here. Add, edit, and schedule releases for future publication.
                 </p>
 
-                <div className="mt-8 border-t border-gray-100 pt-8">
-                    <div className="flex flex-col items-center">
-                        <div className="relative">
-                            <img
-                                src="/api/placeholder/300/200"
-                                alt="Calendar illustration"
-                                className="max-w-xs rounded-lg opacity-60"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="bg-white/80 p-3 rounded-full">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="12" r="10" />
-                                        <line x1="12" y1="8" x2="12" y2="16" />
-                                        <line x1="8" y1="12" x2="16" y2="12" />
-                                    </svg>
-                                </div>
+                {loading && (
+                    <div className="flex justify-center items-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#497174]"></div>
+                    </div>
+                )}
+
+                {error && !loading && (
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 my-4">
+                        <div className="flex">
+                            <div className="ml-3">
+                                <p className="text-red-700">{error}</p>
                             </div>
                         </div>
-                        <p className="text-center text-gray-500 mt-6 font-medium">No upcoming releases scheduled</p>
-                        <button className="mt-4 text-green-600 font-medium hover:text-green-800 transition-colors">
-                            Create your first release
+                    </div>
+                )}
+
+                {!loading && !error && releases.length === 0 && (
+                    <div className="flex flex-col items-center py-12">
+                        <div className="relative bg-[#D6E4E5] p-8 rounded-lg mb-4">
+                            <FaPlus className="h-24 w-24 text-[#497174] opacity-70" />
+                            <div className="absolute bottom-4 right-4 bg-[#EB6440] text-white p-2 rounded-full">
+                                <FaPlus className="h-5 w-5" />
+                            </div>
+                        </div>
+                        <p className="text-center text-[#497174] mt-2 font-medium text-lg">No upcoming releases scheduled</p>
+                        <p className="text-center text-gray-500 mb-4">Start by creating your first release</p>
+                        <button onClick={() => window.location.href = "/create-release"} className="mt-2 px-6 py-2 bg-[#EB6440] text-white font-medium rounded-lg hover:bg-[#d05a3a] transition-colors">
+                            Create Release
                         </button>
                     </div>
-                </div>
+                )}
 
-                <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
-                    <div className="flex gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-                        <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                {!loading && !error && releases.length > 0 && (
+                    <div className="mt-8 border-t border-[#D6E4E5] pt-8">
+                        {releases.map((release, idx) => (
+                            <div key={idx} className={`group border-b border-[#D6E4E5] py-4 hover:bg-[#EFF5F5] transition-colors rounded-lg px-3 ${idx === 0 ? 'border-t' : ''}`}>
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                    <div className="flex-shrink-0 relative">
+                                        <img
+                                            src={release.featuredImage || "/api/placeholder/96/96"}
+                                            alt={release.title}
+                                            className="w-20 h-20 object-cover rounded-lg shadow border border-[#D6E4E5]"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = "/api/placeholder/96/96";
+                                            }}
+                                        />
+                                        <div className="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4 bg-[#D6E4E5] text-[#497174] text-xs font-bold px-2 py-1 rounded-full">
+                                            {new Date(release.releaseDate).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
+                                        </div>
+                                    </div>
+                                    <div className="flex-grow">
+                                        <h3 className="text-lg font-semibold text-[#497174] group-hover:text-[#EB6440] transition-colors">{release.title}</h3>
+                                        <p className="text-gray-600 line-clamp-2">{release.description}</p>
+                                        <p className="text-sm text-[#497174] mt-1">Release date: {formatDate(release.releaseDate)}</p>
+                                    </div>
+                                    <div className="sm:ml-auto flex flex-row sm:flex-col gap-3 mt-3 sm:mt-0">
+                                        <button
+                                            className="px-4 py-1 bg-[#497174] text-white rounded-lg hover:bg-[#3a5a5c] transition-colors flex items-center gap-1"
+                                            onClick={() => editRelease(release._id)}
+                                        >
+                                            <FaEdit className="h-4 w-4" />
+                                            Edit
+                                        </button>
+                                        <button
+                                            className="px-4 py-1 bg-[#EB6440] text-white rounded-lg hover:bg-[#d05a3a] transition-colors flex items-center gap-1"
+                                            onClick={() => deleteRelease(release._id)}
+                                        >
+                                            <FaTrashAlt className="h-4 w-4" />
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <div className="text-sm text-gray-500">Last updated: Today at 10:24 AM</div>
-                </div>
+                )}
             </div>
         </div>
     );

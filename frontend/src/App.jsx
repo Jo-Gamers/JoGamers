@@ -13,11 +13,13 @@ import Publisher from "./components/publisher/Publisher";
 import Register from "./components/register/Register";
 import UpcomingReleases from "./components/upcoming-releases/UpcomingReleases";
 import Footer from "./components/footer/Footer";
+import EditRelease from "./components/publisher/EditRelease";
+import ArticleDetailsView from "./components/publisher/ArticleDetailsView";
+import GamingAPIComponent from "./components/publisher/GamingAPIComponent";
 
 const App = () => {
   return (
     <Router>
-      <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -30,6 +32,9 @@ const App = () => {
         <Route path="/publisher" element={<Publisher />} />
         <Route path="/register" element={<Register />} />
         <Route path="/upcoming-releases" element={<UpcomingReleases />} />
+        <Route path="/edit-releases/:id" element={<EditRelease />} />
+        <Route path="/games" element={<GamingAPIComponent />} /> 
+
       </Routes>
       <Footer />
     </Router>
