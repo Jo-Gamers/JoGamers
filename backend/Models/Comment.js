@@ -12,7 +12,7 @@ const commentSchema = new mongoose.Schema({
     },
     article: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Article",
+        ref: "news",
         required: true,
     },
     reports: [
