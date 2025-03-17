@@ -366,7 +366,7 @@ const Register = () => {
           {/* Image Section */}
           <div className="w-full md:w-1/2 relative h-64 md:h-auto order-2 md:order-1">
             <img
-              src="https://via.placeholder.com/600x400" // استبدل الرابط بصورة صالحة
+              src="https://www.sqorebda3.com/vb/attachments/16229/" // استبدل الرابط بصورة صالحة
               alt="Registration"
               className="absolute inset-0 w-full h-full object-cover"
             />
