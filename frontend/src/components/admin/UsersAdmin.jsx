@@ -5,9 +5,14 @@ import Swal from 'sweetalert2';
 
 const UsersAdmin = () => {
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [updatedData, setUpdatedData] = useState({ username: "", email: "", role: "" });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
+  const [sortColumn, setSortColumn] = useState('');
+  const [sortDirection, setSortDirection] = useState('asc');
 
   // Fetch Users from Backend
   useEffect(() => {
@@ -18,16 +23,41 @@ const UsersAdmin = () => {
     try {
       const response = await axios.get("http://localhost:5000/api/users");
       setUsers(response.data);
+      setFilteredUsers(response.data); // Initialize with all users
     } catch (error) {
       console.error("Error fetching users:", error);
     }
   };
 
-  // Open Update Modal
-  const openUpdateModal = (user) => {
-    setSelectedUser(user);
-    setUpdatedData({ username: user.username, email: user.email, role: user.role });
-    setModalOpen(true);
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+    filterUsers(e.target.value, roleFilter);
+  };
+
+  const handleRoleFilter = (e) => {
+    setRoleFilter(e.target.value);
+    filterUsers(searchQuery, e.target.value);
+  };
+
+  const filterUsers = (search, role) => {
+    let filtered = users.filter(user => {
+      const matchesSearch = user.username.toLowerCase().includes(search.toLowerCase()) ||
+                            user.email.toLowerCase().includes(search.toLowerCase());
+      const matchesRole = role ? user.role === role : true;
+      return matchesSearch && matchesRole;
+    });
+
+    if (sortColumn) {
+      filtered = filtered.sort((a, b) => {
+        if (sortDirection === 'asc') {
+          return a[sortColumn] > b[sortColumn] ? 1 : -1;
+        } else {
+          return a[sortColumn] < b[sortColumn] ? 1 : -1;
+        }
+      });
+    }
+
+    setFilteredUsers(filtered);
   };
 
   // Handle Update User
@@ -91,62 +121,179 @@ const UsersAdmin = () => {
     },
   ];
 
+  // Sorting Functionality
+  const handleSort = (column, direction) => {
+    setSortColumn(column.selector);
+    setSortDirection(direction);
+    filterUsers(searchQuery, roleFilter); // Reapply filters and sorting
+  };
+
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Users Management</h1>
+   <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+      <header className="mb-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Users Management</h1>
+            <p className="text-gray-500 mt-1">View and manage user accounts</p>
+          </div>
+          <button 
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow flex items-center gap-2 transition-colors"
+            onClick={() => {/* Add new user function */}}
+          >
+            <span className="text-lg">+</span>
+            <span>Add User</span>
+          </button>
+        </div>
+      </header>
 
-      {/* DataTable */}
-      <DataTable
-        columns={columns}
-        data={users}
-        pagination
-        highlightOnHover
-        striped
-        persistTableHead
-      />
-
-      {/* Update User Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-xl font-semibold mb-4">Update User</h2>
-            <label className="block mb-2">Username</label>
-            <input
-              type="text"
-              value={updatedData.username}
-              onChange={(e) => setUpdatedData({ ...updatedData, username: e.target.value })}
-              className="w-full p-2 border rounded mb-2"
-            />
-            <label className="block mb-2">Email</label>
-            <input
-              type="email"
-              value={updatedData.email}
-              onChange={(e) => setUpdatedData({ ...updatedData, email: e.target.value })}
-              className="w-full p-2 border rounded mb-2"
-            />
-            <label className="block mb-2">Role</label>
-            <select
-              value={updatedData.role}
-              onChange={(e) => setUpdatedData({ ...updatedData, role: e.target.value })}
-              className="w-full p-2 border rounded mb-4"
+      {/* Search & Filter Bar */}
+      <div className="bg-white p-4 rounded-xl shadow-md mb-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-grow">
+            <div className="relative">
+              <input 
+                type="text" 
+                placeholder="Search users..." 
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={searchQuery}
+                onChange={handleSearch}
+              />
+              <div className="absolute left-3 top-2.5 text-gray-400">
+                🔍
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <select 
+              value={roleFilter}
+              onChange={handleRoleFilter}
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
+              <option value="">All Roles</option>
               <option value="user">User</option>
               <option value="publisher">Publisher</option>
               <option value="admin">Admin</option>
             </select>
+            <select 
+              onChange={(e) => handleSort(e.target.value, sortDirection)}
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Sort By</option>
+              <option value="username">Username</option>
+              <option value="email">Email</option>
+              <option value="created">Date Created</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
-            <div className="flex justify-end gap-2">
+      {/* DataTable with enhanced styling */}
+      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <DataTable 
+          columns={columns} 
+          data={filteredUsers} 
+          pagination 
+          highlightOnHover 
+          persistTableHead
+          customStyles={{
+            headRow: {
+              style: {
+                backgroundColor: '#f9fafb',
+                borderBottomWidth: '1px',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                color: '#374151',
+                textTransform: 'uppercase',
+              },
+            },
+            rows: {
+              style: {
+                minHeight: '60px',
+                fontSize: '0.875rem',
+              },
+              highlightOnHoverStyle: {
+                backgroundColor: 'rgba(249, 250, 251, 1)',
+              },
+            },
+            pagination: {
+              style: {
+                borderTopWidth: '1px',
+                borderColor: '#e5e7eb',
+              },
+              pageButtonsStyle: {
+                borderRadius: '0.375rem',
+                height: '32px',
+                width: '32px',
+                margin: '0 4px',
+              },
+            },
+          }}
+        />
+      </div>
+
+      {/* Enhanced Modal for Updating User */}
+      {modalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 animate-fadeIn">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-800">Update User</h2>
               <button 
                 onClick={() => setModalOpen(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded"
+                className="text-gray-400 hover:text-gray-600 text-xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input 
+                  type="text" 
+                  value={updatedData.username} 
+                  onChange={(e) => setUpdatedData({ ...updatedData, username: e.target.value })} 
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+            
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select 
+                  value={updatedData.role} 
+                  onChange={(e) => setUpdatedData({ ...updatedData, role: e.target.value })} 
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="user">User</option>
+                  <option value="publisher">Publisher</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              <div className="flex items-center mt-2">
+                <input 
+                  type="checkbox" 
+                  id="active" 
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="active" className="ml-2 block text-sm text-gray-700">
+                  Active Account
+                </label>
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-3 mt-6">
+              <button 
+                onClick={() => setModalOpen(false)} 
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button 
-                onClick={handleUpdateUser}
-                className="px-4 py-2 bg-blue-500 text-white rounded"
+                onClick={handleUpdateUser} 
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Save
+                Save Changes
               </button>
             </div>
           </div>

@@ -3,34 +3,35 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 
 const ArticalsAdmin = () => {
-  const [articles, setArticles] = useState([]);
-  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [news, setNews] = useState([]);
+  const [selectedNews, setSelectedNews] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [filter, setFilter] = useState('all'); // added state for filtering
 
-  // Fetch Articles from Backend
+  // Fetch News from Backend
   useEffect(() => {
-    fetchArticles();
+    fetchNews();
   }, []);
 
-  const fetchArticles = async () => {
+  const fetchNews = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/articles");
-      setArticles(response.data.articles);
+      const response = await axios.get("http://localhost:5000/api/news/allNews");
+      setNews(response.data);
     } catch (error) {
-      console.error("Error fetching articles:", error);
+      console.error("Error fetching news:", error);
     }
   };
 
-  // Open Modal to View Full Article
-  const openArticleModal = (article) => {
-    setSelectedArticle(article);
+  // Open Modal to View Full News
+  const openNewsModal = (newsItem) => {
+    setSelectedNews(newsItem);
     setModalOpen(true);
   };
 
-  // Approve Article using the new API
-  const approveArticle = async (articleId) => {
+  // Approve News using updateNews Controller
+  const approveNews = async (newsId) => {
     Swal.fire({
-      title: "Approve this article?",
+      title: "Approve this news?",
       text: "This will make it publicly visible!",
       icon: "warning",
       showCancelButton: true,
@@ -40,106 +41,255 @@ const ArticalsAdmin = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.put(`http://localhost:5000/api/articles/${articleId}/approve`);
-          Swal.fire("Approved!", "The article has been approved.", "success");
-          fetchArticles(); // Refresh list
+          await axios.put(`http://localhost:5000/api/news/news/${newsId}`, { approve: true });
+          Swal.fire("Approved!", "The news has been approved.", "success");
+          fetchNews(); // Refresh list
         } catch (error) {
-          Swal.fire("Error", "Failed to approve the article", "error");
+          Swal.fire("Error", "Failed to approve the news", "error");
         }
       }
     });
   };
 
+  // Handle filter changes
+  const handleFilter = (status) => {
+    setFilter(status);
+  };
+
+  // Filtered news based on status
+  const filteredNews = news.filter((newsItem) => {
+    if (filter === 'approved') {
+      return newsItem.approve;
+    }
+    if (filter === 'pending') {
+      return !newsItem.approve;
+    }
+    return true; // For 'all' filter
+  });
+
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Articles Management</h1>
+    <div className="bg-gradient-to-br from-indigo-50 to-blue-50 min-h-screen p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header with stats */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-indigo-900">News Dashboard</h1>
 
-      {/* Grid Layout for Articles */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {articles.map((article) => (
-          <div key={article._id} className="bg-white shadow-lg p-4 rounded-lg">
-            {/* Article Image */}
-            {article.images && article.images.length > 0 ? (
-              <img
-                src={article.images[0]} // Display the first image
-                alt="Article"
-                className="w-full h-40 object-cover rounded-lg mb-2"
-              />
-            ) : (
-              <div className="w-full h-40 bg-gray-300 flex items-center justify-center text-gray-700 rounded-lg">
-                No Image
-              </div>
-            )}
-
-            {/* Article Title */}
-            <h2 className="text-xl font-semibold">{article.title}</h2>
-
-            {/* Published By */}
-            <p className="text-gray-600">By: {article.publishedBy?.name || "Unknown"}</p>
-
-            {/* Approval Status */}
-            <p className={`text-sm mt-1 ${article.approved ? "text-green-600" : "text-red-600"}`}>
-              {article.approved ? "Approved" : "Pending Approval"}
-            </p>
-
-            {/* View & Approve Buttons */}
-            <div className="flex justify-between mt-4">
-              <button
-                onClick={() => openArticleModal(article)}
-                className="px-3 py-1 bg-blue-500 text-white rounded"
-              >
-                View
-              </button>
-
-              {!article.approved && (
-                <button
-                  onClick={() => approveArticle(article._id)}
-                  className="px-3 py-1 bg-green-500 text-white rounded"
-                >
-                  Approve
-                </button>
-              )}
+          <div className="flex space-x-4 mt-4 md:mt-0">
+            <div className="bg-white rounded-lg shadow px-4 py-3 text-center">
+              <p className="text-xs text-indigo-500 font-medium">TOTAL</p>
+              <p className="text-2xl font-bold text-gray-800">{news.length}</p>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Article Modal */}
-      {modalOpen && selectedArticle && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
-            {/* Article Title */}
-            <h2 className="text-xl font-bold">{selectedArticle.title}</h2>
-            <p className="text-gray-600 mt-2">By: {selectedArticle.publishedBy?.name || "Unknown"}</p>
-
-            {/* Article Image(s) */}
-            {selectedArticle.images && selectedArticle.images.length > 0 ? (
-              <img
-                src={selectedArticle.images[0]} // Display first image in modal
-                alt="Article"
-                className="w-full h-56 object-cover rounded-lg my-4"
-              />
-            ) : (
-              <div className="w-full h-40 bg-gray-300 flex items-center justify-center text-gray-700 rounded-lg my-4">
-                No Image Available
-              </div>
-            )}
-
-            {/* Article Content */}
-            <p className="mt-4">{selectedArticle.content}</p>
-
-            {/* Close Modal Button */}
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => setModalOpen(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded"
-              >
-                Close
-              </button>
+            <div className="bg-white rounded-lg shadow px-4 py-3 text-center">
+              <p className="text-xs text-green-500 font-medium">APPROVED</p>
+              <p className="text-2xl font-bold text-gray-800">{news.filter(n => n.approve).length}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow px-4 py-3 text-center">
+              <p className="text-xs text-amber-500 font-medium">PENDING</p>
+              <p className="text-2xl font-bold text-gray-800">{news.filter(n => !n.approve).length}</p>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Filter tabs */}
+        <div className="bg-white shadow-sm rounded-lg p-2 mb-8 flex overflow-x-auto">
+          <button
+            onClick={() => handleFilter('all')}
+            className={`px-4 py-2 ${filter === 'all' ? 'bg-indigo-100 text-indigo-800' : 'text-gray-600 hover:bg-gray-100'} rounded-md font-medium mr-2`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => handleFilter('approved')}
+            className={`px-4 py-2 ${filter === 'approved' ? 'bg-green-100 text-green-800' : 'text-gray-600 hover:bg-gray-100'} rounded-md font-medium mr-2`}
+          >
+            Approved
+          </button>
+          <button
+            onClick={() => handleFilter('pending')}
+            className={`px-4 py-2 ${filter === 'pending' ? 'bg-amber-100 text-amber-800' : 'text-gray-600 hover:bg-gray-100'} rounded-md font-medium`}
+          >
+            Pending
+          </button>
+        </div>
+
+        {/* News grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredNews.map((newsItem) => (
+            <div
+              key={newsItem._id}
+              className="bg-white rounded-xl shadow overflow-hidden group transform transition-transform duration-300 hover:scale-105 relative"
+            >
+              <div className="relative group-hover:bg-black group-hover:opacity-50 transition-all duration-300">
+                {/* News image */}
+                {newsItem.images && newsItem.images.length > 0 ? (
+                  <img
+                    src={newsItem.images[0]}
+                    alt={newsItem.title}
+                    className="w-full h-52 object-cover group-hover:blur-sm transition-all duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-52 bg-gray-100 flex items-center justify-center">
+                    <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                )}
+
+                {/* Status badge */}
+                <div className="absolute top-4 right-4">
+                  <span
+                    className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                      newsItem.approve
+                        ? "bg-green-100 text-green-800"
+                        : "bg-amber-100 text-amber-800"
+                    }`}
+                  >
+                    {newsItem.approve ? "Approved" : "Pending"}
+                  </span>
+                </div>
+
+                {/* Quick action overlay */}
+                <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <button
+                    onClick={() => openNewsModal(newsItem)}
+                    className="bg-white text-gray-800 font-medium px-4 py-2 rounded-lg mr-2 hover:bg-gray-100"
+                  >
+                    View
+                  </button>
+                  {!newsItem.approve && (
+                    <button
+                      onClick={() => approveNews(newsItem._id)}
+                      className="bg-green-600 text-white font-medium px-4 py-2 rounded-lg hover:bg-green-700"
+                    >
+                      Approve
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-5">
+                <div className="flex items-center mb-3">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-800 flex items-center justify-center mr-3 font-medium">
+                    {(newsItem.author?.name || "U")[0].toUpperCase()}
+                  </div>
+                  <span className="text-sm text-gray-600">{newsItem.author?.name || "Unknown"}</span>
+                </div>
+
+                <h2 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">{newsItem.title}</h2>
+
+                <p className="text-gray-600 text-sm line-clamp-2 mb-4">
+                  {newsItem.content}
+                </p>
+
+                <div className="flex justify-between items-center">
+                  <button
+                    onClick={() => openNewsModal(newsItem)}
+                    className="text-indigo-600 text-sm font-medium hover:text-indigo-800"
+                  >
+                    Read more
+                  </button>
+
+                  {!newsItem.approve && (
+                    <button
+                      onClick={() => approveNews(newsItem._id)}
+                      className="text-green-600 text-sm font-medium hover:text-green-800"
+                    >
+                      Approve
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Modal */}
+        {modalOpen && selectedNews && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Modal header */}
+              <div className="relative">
+                {selectedNews.images && selectedNews.images.length > 0 ? (
+                  <img
+                    src={selectedNews.images[0]}
+                    alt={selectedNews.title}
+                    className="w-full h-64 object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-64 bg-gray-100 flex items-center justify-center">
+                    <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                )}
+
+                {/* Close button */}
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className="absolute top-4 right-4 bg-black bg-opacity-50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-opacity-70"
+                >
+                  ✕
+                </button>
+
+                {/* Status badge */}
+                <div className="absolute top-4 left-4">
+                  <span
+                    className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                      selectedNews.approve
+                        ? "bg-green-100 text-green-800"
+                        : "bg-amber-100 text-amber-800"
+                    }`}
+                  >
+                    {selectedNews.approve ? "Approved" : "Pending"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Modal content */}
+              <div className="p-6 overflow-y-auto flex-1">
+                <div className="flex items-center mb-6">
+                  <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-800 flex items-center justify-center mr-3 font-medium">
+                    {(selectedNews.author?.name || "U")[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-gray-800 font-medium">{selectedNews.author?.name || "Unknown"}</p>
+                    <p className="text-gray-500 text-sm">Author</p>
+                  </div>
+                </div>
+
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">{selectedNews.title}</h2>
+
+                <div className="prose max-w-none">
+                  <p>{selectedNews.content}</p>
+                </div>
+              </div>
+
+              {/* Modal footer */}
+              <div className="border-t border-gray-200 p-4 flex justify-between">
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                >
+                  Close
+                </button>
+
+                {!selectedNews.approve && (
+                  <button
+                    onClick={() => {
+                      approveNews(selectedNews._id);
+                      setModalOpen(false);
+                    }}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  >
+                    Approve & Close
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

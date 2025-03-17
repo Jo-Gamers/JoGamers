@@ -12,9 +12,9 @@ export default function Admin() {
         switch (selectedTab) {
             case 'Statistics':
                 return <StatisticsAdmin />;
-            case 'users':
+            case 'Users':
                 return <UsersAdmin />;
-            case 'articles':
+            case 'News':
                 return <ArticalsAdmin />;
             default:
                 return <StatisticsAdmin />;
@@ -31,5 +31,6 @@ export default function Admin() {
                 {renderContent()}
             </div>
         </div>
+        
     );
 }
