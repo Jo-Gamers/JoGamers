@@ -27,8 +27,6 @@ const Home = () => {
     <div className="bg-[#EFF5F5] min-h-screen mt-15">
       <Navbar />
 
-      {/* <UpcomingReleases /> */}
-
       {/* Hero Section with Featured Article */}
       <section className="bg-[#497174] text-white">
         <div className="container mx-auto px-4 py-8">
@@ -37,10 +35,11 @@ const Home = () => {
             <div className="lg:col-span-2 relative rounded-lg overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10"></div>
               <img
-                src="/api/placeholder/800/450"
+                src="/cDWLNQfZ79PLmzkRetYSKe.jpg" // Direct reference to the image in the public folder
                 alt="Featured Game"
                 className="w-full h-96 object-cover group-hover:scale-105 transition duration-300"
               />
+
               <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
                 <div className="mb-2">
                   <span className="bg-[#EB6440] text-black font-bold px-2 py-1 rounded text-xs uppercase">
@@ -56,7 +55,7 @@ const Home = () => {
                 </p>
                 <div className="flex items-center text-sm">
                   <img
-                    src="/api/placeholder/32/32"
+                    src="/professional-man-portrait.jpg"
                     alt="Author"
                     className="rounded-full h-8 w-8 mr-2"
                   />
@@ -70,7 +69,7 @@ const Home = () => {
               <div className="bg-gray-800 rounded-lg overflow-hidden group">
                 <div className="relative">
                   <img
-                    src="/api/placeholder/400/200"
+                    src="/hq720.jpg"
                     alt="Game News"
                     className="w-full h-44 object-cover group-hover:scale-105 transition duration-300"
                   />
@@ -93,7 +92,7 @@ const Home = () => {
               <div className="bg-gray-800 rounded-lg overflow-hidden group">
                 <div className="relative">
                   <img
-                    src="/api/placeholder/400/200"
+                    src="download.jpg"
                     alt="Game News"
                     className="w-full h-44 object-cover group-hover:scale-105 transition duration-300"
                   />
@@ -116,12 +115,16 @@ const Home = () => {
           </div>
         </div>
       </section>
-cxxxx
-      
-      <LatestNews />
-    <UpcomingReleases/>
 
-      
+      {/*  <LatestNews /> */}
+      <LatestNews />
+
+      {/* <UpcomingReleases /> */}
+      <UpcomingReleases />
+
+      <br />
+      <br />
+      <br />
     </div>
   );
 };

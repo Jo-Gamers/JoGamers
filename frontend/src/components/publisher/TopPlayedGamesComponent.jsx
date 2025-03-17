@@ -11,7 +11,8 @@ const TopPlayedGamesComponent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 32;
   useEffect(() => {
     // Handle scroll to top button visibility
     const handleScroll = () => {
@@ -106,6 +107,13 @@ const TopPlayedGamesComponent = () => {
   const filteredGames = games.filter(game =>
     game.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  const totalPages = Math.ceil(filteredGames.length / itemsPerPage);
+  const paginatedGames = filteredGames.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  
 
   const handleGameSelect = (game) => {
     setSelectedGame(selectedGame && selectedGame.appid === game.appid ? null : game);
@@ -249,7 +257,7 @@ const TopPlayedGamesComponent = () => {
           {/* Game Grid/List */}
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredGames.map((game) => (
+              {paginatedGames.map((game) => (
                 <div 
                   key={game.appid} 
                   className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl cursor-pointer group"
@@ -280,9 +288,6 @@ const TopPlayedGamesComponent = () => {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="text-lg font-bold mb-2 truncate group-hover:text-teal-700 transition-colors duration-200" style={{ color: "#497174" }}>
-                      {game.name}
-                    </h3>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center">
                         <Trophy className="h-4 w-4 text-yellow-500 mr-1" />
@@ -343,7 +348,7 @@ const TopPlayedGamesComponent = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {filteredGames.map((game) => (
+                  {paginatedGames.map((game) => (
                     <React.Fragment key={game.appid}>
                       <tr 
                         className={`hover:bg-gray-50 transition-colors duration-150 cursor-pointer ${selectedGame && selectedGame.appid === game.appid ? 'bg-teal-50' : ''}`}
@@ -455,45 +460,44 @@ const TopPlayedGamesComponent = () => {
           )}
           
           {/* Pagination (Optional) - Just showing UI, not functional */}
-          {filteredGames.length > 0 && (
-            <div className="mt-8 flex items-center justify-center">
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                <a
-                  href="#"
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                >
-                  <span className="sr-only">Previous</span>
-                  <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </a>
-                <a href="#" className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                  1
-                </a>
-                <a href="#" className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-teal-600 text-sm font-medium text-white">
-                  2
-                </a>
-                <a href="#" className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                  3
-                </a>
-                <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                  ...
-                </span>
-                <a href="#" className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                  10
-                </a>
-                <a
-                  href="#"
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                >
-                  <span className="sr-only">Next</span>
-                  <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                </a>
-              </nav>
-            </div>
-          )}
+          {totalPages > 1 && (
+  <div className="mt-10 flex justify-center items-center gap-2 flex-wrap">
+    <button
+      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+      disabled={currentPage === 1}
+      className={`px-3 py-1 rounded-md font-medium ${
+        currentPage === 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#EB6440] text-white hover:bg-[#d05a3a]'
+      }`}
+    >
+      Previous
+    </button>
+
+    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+      <button
+        key={page}
+        onClick={() => setCurrentPage(page)}
+        className={`px-3 py-1 rounded-md font-medium ${
+          currentPage === page
+            ? 'bg-[#497174] text-white'
+            : 'bg-white text-[#497174] border border-[#D6E4E5] hover:bg-[#EFF5F5]'
+        }`}
+      >
+        {page}
+      </button>
+    ))}
+
+    <button
+      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+      disabled={currentPage === totalPages}
+      className={`px-3 py-1 rounded-md font-medium ${
+        currentPage === totalPages ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#EB6440] text-white hover:bg-[#d05a3a]'
+      }`}
+    >
+      Next
+    </button>
+  </div>
+)}
+
         </div>
         
         {/* Scroll to top button */}
