@@ -55,7 +55,7 @@ const Home = () => {
                 </p>
                 <div className="flex items-center text-sm">
                   <img
-                    src="/api/placeholder/32/32"
+                    src="/professional-man-portrait.jpg"
                     alt="Author"
                     className="rounded-full h-8 w-8 mr-2"
                   />
