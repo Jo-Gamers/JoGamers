@@ -4,6 +4,7 @@ const multer = require("multer");
 const articleController = require("../controllers/articleController");
 const protect = require("../middlewares/authMiddleware");
 const authorize = require("../middlewares/authorizeMiddleware");
+const latestNewsController = require("../controllers/latestNewsController");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -24,6 +25,6 @@ router.post("/create", protect, authorize('publisher'), upload, articleControlle
 router.put("/:id", protect, authorize('publisher'), upload, articleController.updateArticle);
 router.delete("/:id", protect, authorize('publisher'), articleController.deleteArticle);
 router.put("/:id/approve", protect, authorize('publisher'), articleController.approveArticle);
-
+router.get("/latest", latestNewsController.getLatestArticles);
 
 module.exports = router;
