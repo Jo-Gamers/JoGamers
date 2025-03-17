@@ -1,5 +1,5 @@
-const Comment = require("../models/Comment");
-const News = require("../models/news");
+const Comment = require("../Models/Comment");
+const News = require("../Models/news");
 
 
 const addComment = async (req, res) => {

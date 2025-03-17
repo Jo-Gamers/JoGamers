@@ -1,5 +1,5 @@
 const cloudinary = require('cloudinary').v2;
-const UpcomingGameRelease = require('../models/UpcomingGameRelease');
+const UpcomingGameRelease = require('../Models/UpcomingGameRelease');
 
 require('dotenv').config();
 

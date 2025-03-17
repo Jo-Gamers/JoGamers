@@ -1,5 +1,5 @@
 const User = require("../Models/User");
-const News = require("../models/news");
+const News = require("../Models/news");
 
 
 const getArticleStatus = async (req, res) => {
