@@ -15,17 +15,17 @@ const SidebarAdmin = ({ setSelectedTab }) => {
             </button>
 
             <button 
-              onClick={() => setSelectedTab('users')}
+              onClick={() => setSelectedTab('Users')}
               className="w-full text-left flex items-center px-4 py-3 text-gray-300 hover:bg-slate-700 rounded-lg transition-colors duration-200"
             >
               <span className="text-lg">Users</span>
             </button>
 
             <button 
-              onClick={() => setSelectedTab('articles')}
+              onClick={() => setSelectedTab('News')}
               className="w-full text-left flex items-center px-4 py-3 text-gray-300 hover:bg-slate-700 rounded-lg transition-colors duration-200"
             >
-              <span className="text-lg">Articles</span>
+              <span className="text-lg">News</span>
             </button>
           </div>
 
