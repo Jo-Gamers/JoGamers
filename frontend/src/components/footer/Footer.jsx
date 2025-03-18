@@ -6,12 +6,12 @@ const Footer = () => {
 
   // Color palette
   const colors = {
-    lightBg: "#EFF5F5",
+    lightBg:  "#EFF5F5",
     mediumBg: "#D6E4E5",
-    primary: "#497174",
-    accent: "#EB6440",
-    white: "#FFFFFF",
-    black: "#000000"
+    primary:  "#497174",
+    accent:   "#EB6440",
+    white:    "#FFFFFF",
+    black:    "#000000"
   };
 
   return (

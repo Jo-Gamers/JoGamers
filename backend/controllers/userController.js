@@ -1,6 +1,5 @@
 const User = require("../Models/User");
 const jwt = require("jsonwebtoken");
-
 // إنشاء توكن JWT
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "1d" });
@@ -9,7 +8,7 @@ const generateToken = (userId) => {
 // تسجيل مستخدم جديد
 exports.register = async (req, res) => {
   try {
-    const { username, email, password,role } = req.body;
+    const { username, email, password } = req.body;
 
     // التحقق من وجود المستخدم مسبقًا
     const userExists = await User.findOne({ email });
@@ -17,7 +16,7 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
 
     // إنشاء مستخدم جديد
-    const user = await User.create({ username, email, password,role });
+    const user = await User.create({ username, email, password });
 
     // إنشاء توكن
     const token = generateToken(user._id);

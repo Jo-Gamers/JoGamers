@@ -1,4 +1,3 @@
-// export default Profile;
 import React, { useState, useEffect } from "react";
 import Navbar from "../navbar/Navbar";
 import { User, Mail, Edit2, X, Camera, Bookmark, MessageSquare, Clock, Heart } from "lucide-react";
