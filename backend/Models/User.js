@@ -28,13 +28,13 @@ const userSchema = new mongoose.Schema({
   likedArticles: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Article",
+      ref: "News",  // Correct reference to "News"
     },
   ],
   bookmarkedArticles: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Article",
+      ref: "News",  // Correct reference to "News"
     },
   ],
   comments: [
@@ -58,7 +58,37 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// التحقق من صحة كلمة المرور
+userSchema.methods.toggleLike = function (articleId) {
+  const index = this.likedArticles.indexOf(articleId);
+  if (index === -1) {
+    this.likedArticles.push(articleId);  // Add to liked articles
+  } else {
+    this.likedArticles.splice(index, 1);  // Remove from liked articles
+  }
+  return this.save();
+};
+
+userSchema.methods.toggleBookmark = function (articleId) {
+  const index = this.bookmarkedArticles.indexOf(articleId);
+  if (index === -1) {
+    this.bookmarkedArticles.push(articleId);  // Add to bookmarked articles
+  } else {
+    this.bookmarkedArticles.splice(index, 1);  // Remove from bookmarked articles
+  }
+  return this.save();
+};
+
+userSchema.methods.toggleComment = function (articleId) {
+  const index = this.comments.indexOf(articleId);
+  if (index === -1) {
+    this.comments.push(articleId);  // Add to comments
+  } else {
+    this.comments.splice(index, 1);  // Remove from comments
+  }
+  return this.save();
+};
+
+// Password comparison method
 userSchema.methods.matchPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };

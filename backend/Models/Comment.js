@@ -12,7 +12,7 @@ const commentSchema = new mongoose.Schema({
     },
     article: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Article",
+        ref: "News",
         required: true,
     },
     reports: [
@@ -21,7 +21,12 @@ const commentSchema = new mongoose.Schema({
             ref: "User",
         },
     ],
-});
+    isDeleted: {
+        type: Boolean,
+        default: false,
+    },
+}, { timestamps: true });
 
 const Comment = mongoose.model("Comment", commentSchema);
 module.exports = Comment;
+
