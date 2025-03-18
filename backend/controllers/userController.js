@@ -1,6 +1,7 @@
 const User = require("../Models/User");
-const jwt = require("jsonwebtoken");
 
+const jwt = require("jsonwebtoken");
+const multer = require('multer');
 // إنشاء توكن JWT
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "1d" });
@@ -106,5 +107,104 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ error: "Failed to delete user" });
   }
 };
+
+// // Protected Route (Profile)
+exports.profile = async (req, res) => {
+  const token = req.cookies.token; // التحقق من وجود الكوكيز
+
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized, token missing" });
+  }
+
+  try {
+    // التحقق من صحة التوكن باستخدام JWT
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // جلب بيانات المستخدم بناءً على الـ userId المخزن في التوكن
+    const user = await User.findById(decoded.userId).select('-password'); 
+    res.json(user); // إرجاع بيانات المستخدم
+  } catch (error) {
+    console.error("Error verifying token:", error);
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+};
+
+// جلب بيانات المستخدم
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // تحديد المجلد الذي سيتم حفظ الملفات فيه
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname); // تعيين اسم فريد للملف
+  },
+});
+
+exports.upload = multer({ storage });
+
+// تحديث الملف الشخصي
+exports.updateProfile = async (req, res) => {
+  console.log("Request Body:", req.body); // تحقق من البيانات المرسلة
+  console.log("Request File:", req.file); // تحقق من الملف
+  const { username, email, favoriteGame, gamerTag } = req.body;
+  const profileImage = req.file ? req.file.filename : undefined; // اسم الملف إذا تم تحميله
+
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // تحديث الحقول
+    user.username = username || user.username;
+    user.email = email || user.email;
+    user.favoriteGame = favoriteGame || user.favoriteGame;
+    user.gamerTag = gamerTag || user.gamerTag;
+    if (profileImage) {
+      user.profileImage = profileImage; // تحديث صورة الملف الشخصي إذا تم تحميلها
+    }
+
+    const updatedUser = await user.save();
+    res.status(200).json({ message: "Profile updated", user: updatedUser });
+  } catch (err) {
+    console.error("Update Error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// exports.updateProfile = async (req, res) => {
+//   console.log("Request Body:", req.body); // تحقق من البيانات المرسلة
+//   const { username, email, profileImage } = req.body;
+
+//   try {
+//     const user = await User.findById(req.userId);
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     const updatedUser = await User.findByIdAndUpdate(
+//       req.userId,
+//       { $set: { username, email, profileImage } },
+//       { new: true }
+//     ).select("-password");
+
+//     res.status(200).json({ message: "Profile updated", user: updatedUser });
+//   } catch (err) {
+//     console.error("Update Error:", err);
+//     res.status(500).json({ message: "Server error", error: err.message });
+//   }
+// };
+
 
 
