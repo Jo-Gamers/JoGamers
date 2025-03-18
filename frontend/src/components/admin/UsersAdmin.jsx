@@ -94,7 +94,15 @@ const UsersAdmin = () => {
       }
     });
   };
-
+  const openUpdateModal = (user) => {
+    setSelectedUser(user); // Set the selected user
+    setUpdatedData({
+      username: user.username,
+      email: user.email,
+      role: user.role,
+    }); // Set the updated data for the selected user
+    setModalOpen(true); // Open the modal
+  };
   // DataTable Columns
   const columns = [
     { name: "Username", selector: row => row.username, sortable: true },

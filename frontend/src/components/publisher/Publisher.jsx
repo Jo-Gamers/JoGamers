@@ -4,8 +4,6 @@ import ArticlesDashboard from "./ArticlesDashboard";
 import CreateArticle from "./CreateArticle";
 import CreateRelease from "./CreateRelease";
 import UpcomingReleasesDashboard from "./UpcomingReleasesDashboard";
-import PublisherReports from "./PublisherReports";
-import PublisherMessages from "./PublisherMessages";
 
 function Publisher() {
   const [activeTab, setActiveTab] = useState("articles");
@@ -20,10 +18,6 @@ function Publisher() {
         return <CreateRelease />;
       case "upcoming":
         return <UpcomingReleasesDashboard />;
-      case "reports":
-        return <PublisherReports />;
-      case "messages":
-        return <PublisherMessages />;
       default:
         return <ArticlesDashboard />;
     }
@@ -63,8 +57,6 @@ function Publisher() {
               <TabButton label="Create Article" tab="create-article" activeTab={activeTab} setActiveTab={setActiveTab} />
               <TabButton label="Create Release" tab="create-release" activeTab={activeTab} setActiveTab={setActiveTab} />
               <TabButton label="Upcoming Releases" tab="upcoming" activeTab={activeTab} setActiveTab={setActiveTab} />
-              <TabButton label="Reports" tab="reports" activeTab={activeTab} setActiveTab={setActiveTab} />
-              <TabButton label="Messages" tab="messages" activeTab={activeTab} setActiveTab={setActiveTab} />
             </nav>
           </div>
 
