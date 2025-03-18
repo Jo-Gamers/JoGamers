@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import Navbar from "../navbar/Navbar";
 import axios from 'axios';
+import Swal from "sweetalert2";
 import { 
   FaFacebook, 
   FaInstagram, 
@@ -31,7 +33,12 @@ const Contact = () => {
         e.preventDefault();
         try {
             await axios.post('http://localhost:5000/api/contact/submit', formData);
-            alert('Message sent successfully!');
+            Swal.fire({
+                title: 'Success!',
+                text: 'Message sent successfully!',
+                icon: 'success',
+                confirmButtonText: 'OK'
+              });
             setFormData({
                 firstName: '',
                 lastName: '',
@@ -46,17 +53,18 @@ const Contact = () => {
     };
 
     return (
-        <div className="bg-[#EFF5F5] text-[#497174] min-h-screen">
+        <div className="bg-[#EFF5F5] text-[#497174] min-h-screen my-15">
+            <Navbar/>
             {/* Hero section with gaming graphics background */}
             <div className="bg-gradient-to-r from-[#497174] to-[#497174]/80 relative overflow-hidden">
-                <div className="absolute inset-0 opacity-20">
+                <div className="absolute inset-0 bg-[#497174] opacity-80">
                     <div className="absolute inset-0 bg-[url('https://via.placeholder.com/1920x1080')] bg-cover bg-center"></div>
                 </div>
                 <div className="container mx-auto py-16 px-4 relative">
                     <div className="text-center mb-8">
                         <FaGamepad className="inline-block text-4xl mb-4 text-[#D6E4E5]" />
                         <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#D6E4E5] to-[#EFF5F5]">
-                            Connect With Us
+                            Connect With <span className="text-[#EB6440]">Us</span>
                         </h1>
                         <p className="text-[#D6E4E5] text-lg mt-4">
                             Have questions about gaming news? Want to contribute? Let's talk!
@@ -212,29 +220,9 @@ const Contact = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Map with gaming-themed styling */}
-            <div className="container mx-auto px-4 my-16">
-                <div className="max-w-6xl mx-auto">
-                    <h2 className="text-2xl font-bold text-[#497174] mb-6 flex items-center">
-                        <FaMapMarkerAlt className="mr-2" /> Find Our Gaming Hub
-                    </h2>
-                    <div className="rounded-xl overflow-hidden border-4 border-[#497174] shadow-2xl">
-                        <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3381.3897576302284!2d36.08261977567354!3d32.05870537397211!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151b65cd4d8f17e1%3A0x30e86b8a97e4ac7d!2sOrange%20Digital%20Village%20Zarqa!5e0!3m2!1sen!2sjo!4v1737142763031!5m2!1sen!2sjo"
-                            width="100%" 
-                            height="450" 
-                            style={{border: 0}} 
-                            allowFullScreen="" 
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                        ></iframe>
-                    </div>
-                </div>
-            </div>
             
             {/* Call to action banner */}
-            <div className="bg-gradient-to-r from-[#497174] to-[#497174]/80 py-12 mt-10">
+            <div className="bg-[#497174] text-white rounded-xl p-8 text-center shadow-xl mx-50 mt-40">
                 <div className="container mx-auto px-4 text-center">
                     <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Stay Updated with the Latest Gaming News</h3>
                     <p className="text-[#D6E4E5] mb-8">Subscribe to our newsletter for exclusive gaming content and updates</p>
