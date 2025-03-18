@@ -8,12 +8,11 @@ const Articles = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [viewMode, setViewMode] = useState('');
+  const [viewMode, setViewMode] = useState('grid');
   // const [comments, setComments] = useState({});
  const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [articles, setArticles] = useState([]);
-
 
   useEffect(() => {
     axios.get('http://localhost:5000/api/news/allNews')
@@ -57,6 +56,8 @@ const Articles = () => {
   };
   
   const filteredArticles = articles.filter(article => {
+    const isApproved = article.approve === true;
+
     // Search filter
     const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           article.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
@@ -69,7 +70,7 @@ const Articles = () => {
     const matchesCategory = selectedCategories.length === 0 || 
                             selectedCategories.includes(article.category);
     
-    return matchesSearch && matchesPlatform && matchesCategory;
+    return matchesSearch && matchesPlatform && matchesCategory & isApproved;
 
   });
 
@@ -119,7 +120,7 @@ const Articles = () => {
               <div key={article.id} className="bg-white rounded-xl shadow-lg overflow-hidden mb-10">
                 <div className="md:flex">
                   <div className="md:w-2/3 relative">
-                    <img src={article.images} alt={article.title} className="w-full h-full object-cover" />
+                    <img src={article.images[0]} alt={article.title} className="w-full h-full object-cover" />
                     <div className="absolute top-4 left-4 bg-[#EB6440] text-white px-3 py-1 rounded-full text-sm font-bold">
                       Featured
                     </div>
@@ -335,7 +336,7 @@ const Articles = () => {
                 {filteredArticles.filter(article => !article.featured).map(article => (
                   <div key={article.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="relative">
-                      <img src={article.image} alt={article.title} className="w-full h-48 object-cover" />
+                      <img src={article.images[0]} alt={article.title} className="w-full h-48 object-cover" />
                       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-black opacity-50"></div>
                       <div className="absolute bottom-4 left-4 flex space-x-2">
                         <span className="bg-[#EB6440] text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center">
@@ -381,7 +382,7 @@ const Articles = () => {
                   <div key={article.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="flex flex-col md:flex-row">
                       <div className="md:w-1/3 relative">
-                        <img src={article.images} alt={article.title} className="w-full h-full md:h-48 object-cover" />
+                        <img src={article.images[0]} alt={article.title} className="w-full h-full md:h-48 object-cover" />
                         <div className="absolute top-2 left-2">
                           <span className="bg-[#EB6440] text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center">
                             {getCategoryIcon(article.category)} <span className="ml-1">{article.category}</span>
