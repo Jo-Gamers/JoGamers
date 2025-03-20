@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from "../navbar/Navbar";
 
-
 const Articles = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
@@ -14,17 +13,24 @@ const Articles = () => {
   const [articles, setArticles] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 4; 
+  const [totalPages, setTotalPages] = useState(1);
 
+  // Fetch articles when component loads - getting all articles at once
   useEffect(() => {
-    axios.get('http://localhost:5000/api/news/allNews')
+    axios.get(`http://localhost:5000/api/news/allNewsPagination?page=1&articlesPerPage=100`)
       .then((response) => {
-        setArticles(response.data); 
+        console.log(response.data);
+        setArticles(response.data.news);
       })
       .catch((error) => {
         console.error("Error fetching articles:", error);
       });
   }, []);
-
+  
+  // Reset current page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedPlatforms, selectedCategories]);
   
   const platforms = ["PC", "PS4", "PS5", "Xbox", "Nintendo Switch"];
   
@@ -55,6 +61,7 @@ const Articles = () => {
     );
   };
   
+  // Filter articles based on search and filter criteria
   const filteredArticles = articles.filter(article => {
     const isApproved = article.approve === true;
 
@@ -62,44 +69,60 @@ const Articles = () => {
     const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           article.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
     
-    // Platform filter
+    // Platform filter - handle both array and string formats
     const matchesPlatform = selectedPlatforms.length === 0 || 
-                            selectedPlatforms.some(platform => article.platform.includes(platform));
+                            (Array.isArray(article.platform) 
+                              ? selectedPlatforms.some(platform => article.platform.includes(platform))
+                              : selectedPlatforms.some(platform => article.platform === platform || article.platform.includes(platform)));
     
     // Category filter
     const matchesCategory = selectedCategories.length === 0 || 
                             selectedCategories.includes(article.category);
     
-    return matchesSearch && matchesPlatform && matchesCategory & isApproved;
-
+    return matchesSearch && matchesPlatform && matchesCategory && isApproved;
   });
 
+  // Update total pages based on filtered results
+  useEffect(() => {
+    const calculatedPages = Math.max(1, Math.ceil(filteredArticles.length / articlesPerPage));
+    setTotalPages(calculatedPages);
+  }, [filteredArticles, articlesPerPage]);
+
+  // Get paginated articles based on filtered results
   const indexOfLastArticle = currentPage * articlesPerPage;
   const indexOfFirstArticle = indexOfLastArticle - articlesPerPage;
   const currentArticles = filteredArticles.slice(indexOfFirstArticle, indexOfLastArticle);
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-   
-    const toggleLike = () => {
-      setIsLiked(!isLiked);
-    };
   
-    const toggleBookmark = () => {
-      setIsBookmarked(!isBookmarked);
-    };
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber); 
+  };
+   
+  const toggleLike = () => {
+    setIsLiked(!isLiked);
+  };
+
+  const toggleBookmark = () => {
+    setIsBookmarked(!isBookmarked);
+  };
+
   // Get category icon
   const getCategoryIcon = (categoryName) => {
     const category = categories.find(cat => cat.name === categoryName);
     return category ? category.icon : '📰';
   };
 
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString();
+  };
 
   return (
     <div className="min-h-screen bg-[#EFF5F5] px-4 py-8">
-    <Navbar />
+      <Navbar />
       <main className="max-w-6xl mx-auto mt-15">
-                {/* Breadcrumbs */}
-                <div className="flex items-center text-sm text-gray-500 mb-6">
+        {/* Breadcrumbs */}
+        <div className="flex items-center text-sm text-gray-500 mb-6">
           <a href="/" className="hover:text-[#497174]">Home</a>
           <svg className="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
@@ -108,13 +131,13 @@ const Articles = () => {
           <svg className="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
-         
         </div>
+        
         {/* Featured Article - Conditional Display */}
         {filteredArticles.some(article => article.featured) && (
           <div className="mb-8">
             {filteredArticles.filter(article => article.featured).map(article => (
-              <div key={article.id} className="bg-white rounded-xl shadow-lg overflow-hidden mb-10">
+              <div key={article._id} className="bg-white rounded-xl shadow-lg overflow-hidden mb-10">
                 <div className="md:flex">
                   <div className="md:w-2/3 relative">
                     <img src={article.images[0]} alt={article.title} className="w-full h-full object-cover" />
@@ -136,20 +159,20 @@ const Articles = () => {
                     <div className="flex justify-between items-center mt-4">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-[#497174] rounded-full flex items-center justify-center text-white">
-                          {article.author.charAt(0)}
+                          {article.author ? article.author.charAt(0) : 'A'}
                         </div>
                         <div className="ml-2">
-                          {/* <p className="text-sm font-medium">{article.author}</p> */}
-                          {/* <p className="text-xs text-gray-500">{new Date(article.createdAt).toLocaleDateString()} • {article.readTime}</p> */}
+                          <p className="text-sm font-medium">{article.author}</p>
+                          <p className="text-xs text-gray-500">{formatDate(article.createdAt)} • {article.readTime} min</p>
                         </div>
                       </div>
                       <Link to={`/news/${article._id}`} className="read-more">
-                      <button className="px-4 py-2 bg-[#EB6440] text-white rounded-md hover:bg-opacity-90 flex items-center">
-                        <span>Read</span>
-                        <svg className="w-4 h-4 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M5 12h14M12 5l7 7-7 7"></path>
-                        </svg>
-                      </button>
+                        <button className="px-4 py-2 bg-[#EB6440] text-white rounded-md hover:bg-opacity-90 flex items-center">
+                          <span>Read</span>
+                          <svg className="w-4 h-4 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7"></path>
+                          </svg>
+                        </button>
                       </Link>
                     </div>
                   </div>
@@ -159,7 +182,7 @@ const Articles = () => {
           </div>
         )}
 
-        <div className="flex flex-col lg:flex-row gap-6  ">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar/Filters */}
           <div className="lg:w-1/4">
             <div className="bg-white p-6 rounded-lg shadow-md mb-6 sticky top-20">
@@ -331,7 +354,7 @@ const Articles = () => {
             ) : viewMode === 'grid' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {currentArticles.filter(article => !article.featured).map(article => (
-                  <div key={article.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                  <div key={article._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="relative">
                       <img src={article.images[0]} alt={article.title} className="w-full h-48 object-cover" />
                       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-black opacity-50"></div>
@@ -347,28 +370,28 @@ const Articles = () => {
                           {article.platform}
                         </span>
                         <div className="flex items-center text-xs text-gray-500">
-  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"></circle>
-    <line x1="12" y1="6" x2="12" y2="12"></line>
-    <line x1="12" y1="12" x2="16" y2="14"></line>
-  </svg>
-  {article.readTime} min
-</div>
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="6" x2="12" y2="12"></line>
+                            <line x1="12" y1="12" x2="16" y2="14"></line>
+                          </svg>
+                          {article.readTime} min
+                        </div>
                       </div>
                       <h3 className="text-xl font-bold text-[#497174] mb-2 line-clamp-2">{article.title}</h3>
                       <p className="text-gray-600 mb-4 line-clamp-3">{article.excerpt}</p>
                       <div className="flex justify-between items-center">
                         <div className="flex items-center">
                           <div className="w-8 h-8 bg-[#497174] rounded-full flex items-center justify-center text-white text-sm">
-                            {article.author.charAt(0)}
+                            {article.author ? article.author.charAt(0) : 'A'}
                           </div>
-                          <span className="ml-2 text-sm text-gray-700">{article.date}</span>
+                          <span className="ml-2 text-sm text-gray-700">{formatDate(article.createdAt)}</span>
                         </div>
                         <Link to={`/news/${article._id}`} className="read-more">
-                        <button className="px-4 py-2 bg-[#D6E4E5] text-[#497174] font-medium rounded-md hover:bg-[#497174] hover:text-white transition-colors">
-                          Read More
-                        </button>
-                       </Link>
+                          <button className="px-4 py-2 bg-[#D6E4E5] text-[#497174] font-medium rounded-md hover:bg-[#497174] hover:text-white transition-colors">
+                            Read More
+                          </button>
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -377,7 +400,7 @@ const Articles = () => {
             ) : (
               <div className="space-y-4">
                 {currentArticles.filter(article => !article.featured).map(article => (
-                  <div key={article.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                  <div key={article._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="flex flex-col md:flex-row">
                       <div className="md:w-1/3 relative">
                         <img src={article.images[0]} alt={article.title} className="w-full h-full md:h-61.7 object-cover" />
@@ -393,69 +416,33 @@ const Articles = () => {
                             {article.platform}
                           </span>
                           <div className="flex items-center text-xs text-gray-500">
-  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"></circle>
-    <line x1="12" y1="6" x2="12" y2="12"></line>
-    <line x1="12" y1="12" x2="16" y2="14"></line>
-  </svg>
-  {article.readTime} min
-</div>
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <line x1="12" y1="6" x2="12" y2="12"></line>
+                              <line x1="12" y1="12" x2="16" y2="14"></line>
+                            </svg>
+                            {article.readTime} min
+                          </div>
                         </div>
                         <h3 className="text-xl font-bold text-[#497174] mb-2">{article.title}</h3>
                         <p className="text-gray-600 mb-4">{article.excerpt}</p>
                         <div className="flex justify-between items-center">
                           <div className="flex items-center">
                             <div className="w-8 h-8 bg-[#497174] rounded-full flex items-center justify-center text-white text-sm">
-                              {article.author.charAt(0)}
+                              {article.author ? article.author.charAt(0) : 'A'}
                             </div>
-                            {/* <span className="ml-2 text-sm text-gray-700">{article.author}</span> */}
                           </div>
                           <div className="flex items-center space-x-4">
-                            <div className="flex items-center text-gray-500">
-                              {/* <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                              </svg> */}
-                              {/* {article.comments} */}
+                            <div className="flex space-x-3">
                             </div>
-                            
-              <div className="flex space-x-3">
-                {/* <button 
-                  onClick={toggleLike}
-                  className={`p-2 rounded-full ${isLiked ? 'bg-[#EB6440] text-white' : 'bg-[#D6E4E5] text-[#497174]'}`}
-                >
-                  <svg className="w-5 h-5" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                  </svg>
-                </button>
-                <button 
-                  onClick={toggleBookmark}
-                  className={`p-2 rounded-full ${isBookmarked ? 'bg-[#497174] text-white' : 'bg-[#D6E4E5] text-[#497174]'}`}
-                >
-                  <svg className="w-5 h-5" fill={isBookmarked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                  </svg>
-                </button> */}
-                {/* <button className="p-2 rounded-full bg-[#D6E4E5] text-[#497174]">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-                  </svg>
-                </button>
-                <button className="p-2 rounded-full bg-[#D6E4E5] text-[#497174]">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
-                  </svg>
-                </button> */}
-              </div>
-              <Link to={`/news/${article._id}`} className="read-more">
-
-                            <button className="px-4 py-2 bg-[#D6E4E5] text-[#497174] font-medium rounded-md hover:bg-[#497174] hover:text-white transition-colors flex items-center">
-                              <span>Read</span>
-                              <svg className="w-4 h-4 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M5 12h14M12 5l7 7-7 7"></path>
-                              </svg>
-                            </button>
+                            <Link to={`/news/${article._id}`} className="read-more">
+                              <button className="px-4 py-2 bg-[#D6E4E5] text-[#497174] font-medium rounded-md hover:bg-[#497174] hover:text-white transition-colors flex items-center">
+                                <span>Read</span>
+                                <svg className="w-4 h-4 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M5 12h14M12 5l7 7-7 7"></path>
+                                </svg>
+                              </button>
                             </Link>
-
                           </div>
                         </div>
                       </div>
@@ -467,39 +454,38 @@ const Articles = () => {
             
             {/* Pagination */}
             <div className="mt-8 flex justify-center">
-  <nav className="flex items-center space-x-2">
-   
-    <button 
-      className={`p-2 rounded-md ${currentPage === 1 ? 'bg-gray-300 cursor-not-allowed' : 'bg-white text-gray-500 border border-[#D6E4E5]'}`} 
-      onClick={() => paginate(currentPage - 1)} 
-      disabled={currentPage === 1}
-    >
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
-    </button>
-    {[...Array(Math.ceil(filteredArticles.length / articlesPerPage)).keys()].map(number => (
-      <button 
-        key={number + 1} 
-        onClick={() => paginate(number + 1)} 
-        className={`px-4 py-2 rounded-md ${currentPage === number + 1 ? 'bg-[#497174] text-white' : 'bg-white text-gray-700 border border-[#D6E4E5]'}`}
-      >
-        {number + 1}
-      </button>
-    ))}
+              <nav className="flex items-center space-x-2">
+                <button 
+                  className={`p-2 rounded-md ${currentPage === 1 ? 'bg-gray-300 cursor-not-allowed' : 'bg-white text-gray-500 border border-[#D6E4E5]'}`} 
+                  onClick={() => paginate(currentPage - 1)} 
+                  disabled={currentPage === 1}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
 
-    <button 
-      className={`p-2 rounded-md ${currentPage === Math.ceil(filteredArticles.length / articlesPerPage) ? 'bg-gray-300 cursor-not-allowed' : 'bg-white text-gray-500 border border-[#D6E4E5]'}`} 
-      onClick={() => paginate(currentPage + 1)} 
-      disabled={currentPage === Math.ceil(filteredArticles.length / articlesPerPage)}
-    >
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="9 18 15 12 9 6"></polyline>
-      </svg>
-    </button>
-  </nav>
-</div>
+                {[...Array(totalPages).keys()].map(number => (
+                  <button 
+                    key={number + 1} 
+                    onClick={() => paginate(number + 1)} 
+                    className={`px-4 py-2 rounded-md ${currentPage === number + 1 ? 'bg-[#497174] text-white' : 'bg-white text-gray-700 border border-[#D6E4E5]'}`}
+                  >
+                    {number + 1}
+                  </button>
+                ))}
 
+                <button 
+                  className={`p-2 rounded-md ${currentPage === totalPages ? 'bg-gray-300 cursor-not-allowed' : 'bg-white text-gray-500 border border-[#D6E4E5]'}`} 
+                  onClick={() => paginate(currentPage + 1)} 
+                  disabled={currentPage === totalPages}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+              </nav>
+            </div>
           </div>
         </div>
       </main>
