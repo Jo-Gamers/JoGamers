@@ -1,6 +1,6 @@
 const SidebarAdmin = ({ setSelectedTab }) => {
     return (
-      <div className="min-h-screen w-64 bg-gradient-to-b from-slate-800 to-slate-900 text-gray-100 shadow-xl">
+      <div className="min-h-screen w-64 bg-gradient-to-b from-slate-800 to-[#EB6440] text-gray-100 shadow-xl">
         <div className="p-6 border-b border-slate-700">
           <h1 className="text-2xl font-bold tracking-wider">Admin Panel</h1>
         </div>
