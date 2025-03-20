@@ -21,6 +21,31 @@ exports.getAllNews = async (req, res) => {
   }
 };
 
+exports.getAllNewsPagination = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 2;
+    const articlesPerPage = parseInt(req.query.articlesPerPage) || 6;
+
+    const skip = (page - 1) * articlesPerPage;
+
+    const news = await News.find()
+      .skip(skip) 
+      .limit(articlesPerPage); 
+
+    const totalArticles = await News.countDocuments();
+
+    const totalPages = Math.ceil(totalArticles / articlesPerPage);
+
+    res.status(200).json({
+      news,
+      totalPages,
+      currentPage: page,
+      totalArticles,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching news', error });
+  }
+};
 
 exports.getNewsById = async (req, res) => {
   try {
