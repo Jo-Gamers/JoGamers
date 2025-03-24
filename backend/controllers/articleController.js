@@ -1,5 +1,5 @@
 const cloudinary = require("cloudinary").v2;
-const News = require('../models/news');
+const News = require('../Models/news');
 const Publisher = require("../Models/Publisher");
 require("dotenv").config();
 
@@ -67,6 +67,7 @@ exports.getAllArticle = async (req, res) => {
 exports.getArticleById = async (req, res) => {
   try {
     const { id } = req.params;
+
     const newsItem = await News.findById(id)
       .populate("author", "name")
       .exec();

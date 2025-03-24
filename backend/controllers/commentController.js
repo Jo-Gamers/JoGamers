@@ -1,62 +1,56 @@
-const Comment = require("../models/Comment");
-const News = require("../models/news");
-
+const Comment = require("../Models/Comment");
+const News = require("../Models/news");
 
 const addComment = async (req, res) => {
     const { articleId, content } = req.body;
     const userId = req.userId; 
     try {
+        const article = await News.findById(articleId);
+        if (!article) {
+            return res.status(404).json({ message: "Article not found" });
+        }
 
-      const article = await News.findById(articleId);
-      if (!article) {
-        return res.status(404).json({ message: "المقال غير موجود" });
-      }
+        if (!article.comments) {
+            article.comments = [];  
+        }
 
-      
-      if (!article.comments) {
-        article.comments = [];  
-      }
+        const newComment = new Comment({
+            content,
+            createdBy: userId,
+            article: articleId,
+        });
 
-      
-      const newComment = new Comment({
-        content,
-        createdBy: userId,
-        article: articleId,
-      });
-
-      await newComment.save();
-
-      article.comments.push(newComment._id); 
-      await article.save();
-      console.log(req.body);
-      res.status(201).json({ comment: newComment });
+        await newComment.save();
+        article.comments.push(newComment._id); 
+        await article.save();
+        console.log(req.body);
+        res.status(201).json({ comment: newComment });
     } catch (error) {
-      console.error('Error adding comment:', error);
-      res.status(500).json({ message: 'حدث خطأ أثناء إضافة التعليق' });
+        console.error('Error adding comment:', error);
+        res.status(500).json({ message: 'Error occurred while adding comment' });
     }
 };
 
 const deleteComment = async (req, res) => {
     const { commentId } = req.params;
 
-    
     const comment = await Comment.findById(commentId);
     if (!comment) {
-        return res.status(404).json({ message: "التعليق غير موجود" });
+        return res.status(404).json({ message: "Comment not found" });
     }
 
-  
     if (comment.createdBy.toString() !== req.userId) {
-        return res.status(403).json({ message: "لا يمكنك حذف تعليق شخص آخر" });
+        return res.status(403).json({ message: "You cannot delete someone else's comment" });
     }
 
     comment.isDeleted = true;
 
     try {
         await comment.save();
-        return res.status(200).json({ message: "تم حذف التعليق بنجاح" });
+        return res.status(200).json({ message: "Comment deleted successfully" });
     } catch (error) {
-        return res.status(500).json({ message: "حدث خطأ أثناء حذف التعليق", error });
+        console.error("Error while deleting comment:", error); 
+        return res.status(500).json({ message: "Error occurred while deleting comment", error: error.message }); 
     }
 };
 
@@ -65,7 +59,7 @@ const getComments = async (req, res) => {
 
     const article = await News.findById(articleId);
     if (!article) {
-        return res.status(404).json({ message: "المقال غير موجود" });
+        return res.status(404).json({ message: "Article not found" });
     }
 
     try {
@@ -75,39 +69,40 @@ const getComments = async (req, res) => {
 
         return res.status(200).json({ comments });
     } catch (error) {
-        return res.status(500).json({ message: "حدث خطأ أثناء جلب التعليقات", error });
+        return res.status(500).json({ message: "Error occurred while fetching comments", error });
     }
 };
 
 const reportComment = async (req, res) => {
     const { commentId } = req.params;
-
- 
-    const comment = await Comment.findById(commentId);
-    if (!comment) {
-        return res.status(404).json({ message: "التعليق غير موجود" });
-    }
-
+    const { reason } = req.body;
 
     if (!req.userId) {
-        return res.status(401).json({ message: "يجب تسجيل الدخول للإبلاغ عن تعليق" });
+        return res.status(401).json({ message: "You must be logged in to report a comment" });
     }
 
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+        return res.status(404).json({ message: "Comment not found" });
+    }
+    console.log("User ID:", req.userId);
+    console.log("Comment ID:", commentId);
+    console.log("Comment Reports:", comment.reports);
 
-    if (comment.reports.includes(req.userId)) {
-        return res.status(400).json({ message: "لقد قمت بالإبلاغ عن هذا التعليق مسبقًا" });
+    const hasReported = comment.reports.some(report => report.userId.toString() === req.userId);
+    if (hasReported) {
+        return res.status(400).json({ message: "You have already reported this comment" });
     }
 
-   
-    comment.reports.push(req.userId);
+    comment.reports.push({ userId: req.userId, reason });
 
     try {
         await comment.save();
-        return res.status(200).json({ message: "تم الإبلاغ عن التعليق بنجاح" });
+        return res.status(200).json({ message: "Comment reported successfully" });
     } catch (error) {
-        return res.status(500).json({ message: "حدث خطأ أثناء الإبلاغ عن التعليق", error });
+        console.error("Error saving comment:", error);
+        return res.status(500).json({ message: "Error occurred while reporting comment", error });
     }
 };
 
-
-module.exports = { addComment ,deleteComment , getComments , reportComment};
+module.exports = { addComment, deleteComment, getComments, reportComment };

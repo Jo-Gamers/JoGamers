@@ -1,9 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from "../navbar/Navbar";
 import axios from 'axios';
-
+import ShareButtons from "./ShareButtons";
+import { X, Flag, Trash2, AlertCircle, Send } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 const ArticleDetails = () => {
   const { id } = useParams();
@@ -14,6 +15,9 @@ const ArticleDetails = () => {
   const [comments, setComments] = useState([]);
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [selectedCommentId, setSelectedCommentId] = useState(null);
 
 
   useEffect(() => {
@@ -53,27 +57,66 @@ const ArticleDetails = () => {
   
   const handleCommentSubmit = (e) => {
     e.preventDefault();
-    if (!comment.trim()) return; 
-
-    axios.post("http://localhost:5000/api/comments/add", 
-      {
-        articleId: id,
-        content: comment,
-        
-      },
-      { withCredentials: true } 
-    )
-    .then(response => {
-      setComments(prevComments => [...prevComments, response.data.comment]);  
-      setComment('');  
-      window.location.reload();
-    })
-    .catch(error => {
-      console.error("Error adding comment:", error);
-    });
+    if (!comment.trim()) return;
+  
+    axios.post("http://localhost:5000/api/comments/add", { articleId: id, content: comment }, { withCredentials: true })
+      .then(response => {
+        setComments(prevComments => [...prevComments, response.data.comment]);
+        setComment('');
+        Swal.fire("Success!", "Comment posted successfully!", "success");
+         window.location.reload()
+      })
+      .catch(error => {
+        console.error("Error adding comment:", error);
+        Swal.fire("Error!", "An error occurred while adding the comment.", "error");
+      });
   };
-
-
+  
+  const handleReportSubmit = async (e) => {
+    e.preventDefault();
+  
+    if (!selectedCommentId) {
+      Swal.fire("Error!", "No comment selected.", "error");
+      return;
+    }
+  
+    if (!reportReason.trim()) {
+      Swal.fire("Error!", "Please provide a report reason.", "error");
+      return;
+    }
+  
+    try {
+      const response = await axios.post(
+        `http://localhost:5000/api/comments/report/${selectedCommentId}`,
+        { reason: reportReason },
+        { withCredentials: true }
+      );
+  
+      console.log(response.data);
+      Swal.fire("Success!", response.data.message, "success");
+      setIsReportModalOpen(false);
+      setReportReason('');
+      setSelectedCommentId(null);
+    } catch (error) {
+      console.error("Error reporting comment:", error);
+      Swal.fire("Error!", error.response?.data?.message || "An error occurred while reporting the comment.", "error");
+    }
+  };
+  
+    const handleDelete = async (commentId) => {
+      try {
+        const response = await axios.delete(`http://localhost:5000/api/comments/delete/${commentId}`, {
+          withCredentials: true,
+        });
+        Swal.fire("Success!", response.data.message, "success");
+        
+        setComments(prevComments => prevComments.filter(comment => comment._id !== commentId));
+      } catch (error) {
+        console.error("Error deleting comment:", error);
+        Swal.fire("Error!", error.response?.data?.message || "An error occurred while deleting the comment.", "error");
+      }
+    };
+      
   if (loading) {
     return (
       <div className="min-h-screen bg-[#EFF5F5] flex items-center justify-center">
@@ -173,6 +216,7 @@ const ArticleDetails = () => {
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
           <span className="text-[#497174] font-medium">{article.title}</span>
+          
         </div>
         
        
@@ -268,11 +312,11 @@ const ArticleDetails = () => {
                 </div>
                 <div className="ml-3">
                   <p className="font-medium text-[#497174]">{article.author}</p>
-                  <p className="text-xs text-gray-500">Staff Writer</p>
+                  {/* <p className="text-xs text-gray-500">Staff Writer</p> */}
                 </div>
               </div>
               
-              <div className="flex space-x-3">
+              <div className="flex space-x-4">
                 <button 
                   onClick={toggleLike}
                   className={`p-2 rounded-full ${isLiked ? 'bg-[#EB6440] text-white' : 'bg-[#D6E4E5] text-[#497174]'}`}
@@ -289,16 +333,11 @@ const ArticleDetails = () => {
                     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                   </svg>
                 </button>
-                <button className="p-2 rounded-full bg-[#D6E4E5] text-[#497174]">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-                  </svg>
-                </button>
-                <button className="p-2 rounded-full bg-[#D6E4E5] text-[#497174]">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
-                  </svg>
-                </button>
+                <ShareButtons 
+  articleTitle={article.title} 
+  articleUrl={window.location.href} 
+  articleImage={article.images[0]} 
+/>
               </div>
             </div>
           </div>
@@ -353,37 +392,100 @@ const ArticleDetails = () => {
     </form>
                 {/* Display Comments */}
 
-    <div className="space-y-6">
-  {comments.map((comment) => (
-    <div key={comment._id} className="border-b border-gray-100 pb-6 last:border-0">
-      <div className="flex items-start space-x-4">
-        <div className="flex-shrink-0">
-          <div className="w-10 h-10 bg-[#497174] rounded-full flex items-center justify-center text-white">
-            {comment.createdBy.username.charAt(0)}
-          </div>
-        </div>
-        <div className="flex-grow">
-          <div className="flex items-center mb-1">
-            <h4 className="font-bold text-[#497174]">{comment.createdBy.username}</h4>
-            <span className="text-xs text-gray-500 ml-2">{new Date(comment.createdAt).toLocaleDateString()}</span>
-          </div>
-          <p className="text-gray-700 mb-3">{comment.content}</p>
-          <div className="flex items-center space-x-4">
-            <button className="flex items-center text-gray-500 hover:text-[#EB6440]">
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-              </svg>
-              <span>{comment.likes || 0}</span>
-            </button>
-            <button className="text-gray-500 hover:text-[#497174]">Reply</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  ))}
-</div>
+   
+           <div className="space-y-6">
+             {comments.map((comment) => (
+               <div key={comment._id} className="border-b border-gray-100 pb-6 last:border-0">
+                 <div className="flex items-start space-x-4">
+                   <div className="flex-shrink-0">
+                     <div className="w-10 h-10 bg-[#497174] rounded-full flex items-center justify-center text-white">
+                       {comment.createdBy.username.charAt(0)}
+                     </div>
+                   </div>
+                   <div className="flex-grow">
+                     <div className="flex items-center justify-between mb-1">
+                       <div className="flex items-center">
+                         <h4 className="font-bold text-[#497174]">{comment.createdBy.username}</h4>
+                         <span className="text-xs text-gray-500 ml-2">
+                           {new Date(comment.createdAt).toLocaleDateString()}
+                         </span>
+                       </div>
+                       <div className="flex items-center space-x-2">
+                         <button
+                           onClick={() => {
+                            setSelectedCommentId(comment._id); 
+                            setIsReportModalOpen(true); 
+                          }}
+                           className="p-2 text-gray-500 hover:text-[#EB6440] transition-colors rounded-full hover:bg-gray-100"
+                           title="Report Comment"
+                         >
+                           <Flag className="w-4 h-4" />
+                         </button>
+                         <button
+                        onClick={() => handleDelete(comment._id)} 
+                        className="p-2 text-gray-500 hover:text-red-500 transition-colors rounded-full hover:bg-gray-100"
+                        title="Delete Comment"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                       </div>
+                     </div>
+                     <p className="text-gray-700 mb-3">{comment.content}</p>
+                   </div>
+                 </div>
+               </div>
+             ))}
+           </div>
 
 
+        {/* Report Modal */}
+        {isReportModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center text-[#497174]">
+                  <AlertCircle className="w-6 h-6 mr-2" />
+                  <h3 className="text-lg font-bold">Report Comment</h3>
+                </div>
+                <button
+                  onClick={() => setIsReportModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700 p-1 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleReportSubmit}>
+                <textarea
+                  value={reportReason}
+                  onChange={(e) => setReportReason(e.target.value)}
+                  className="w-full px-4 py-3 border border-[#D6E4E5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#497174] min-h-24 bg-[#EFF5F5] resize-none mb-4"
+                  placeholder="Why are you reporting this comment?"
+                  required
+                ></textarea>
+                
+                <div className="flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsReportModalOpen(false)}
+                    className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Cancel
+                  </button>
+                  
+                  <button
+                    type="submit"
+                    className="px-6 py-2 bg-[#EB6440] text-white rounded-lg hover:bg-opacity-90 transition-colors flex items-center group"
+                  >
+                    <Send className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-transform" />
+                    Send Report
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
   </div>
 </div>
 

@@ -15,12 +15,8 @@ const commentSchema = new mongoose.Schema({
         ref: "News",
         required: true,
     },
-    reports: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-        },
-    ],
+    reports: [{ userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, reason: String }],
+    
     isDeleted: {
         type: Boolean,
         default: false,

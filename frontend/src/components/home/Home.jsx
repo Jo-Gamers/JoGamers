@@ -35,7 +35,7 @@ const Home = () => {
             <div className="lg:col-span-2 relative rounded-lg overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10"></div>
               <img
-                src="/cDWLNQfZ79PLmzkRetYSKe.jpg" // Direct reference to the image in the public folder
+                src="https://esossl-a.akamaihd.net/assets/img/cms/media/703c3682d0c436626bd38dfe4dd41b36_the-elder-scrolls-online-elsweyr_original.jpg" // Direct reference to the image in the public folder
                 alt="Featured Game"
                 className="w-full h-96 object-cover group-hover:scale-105 transition duration-300"
               />
@@ -69,7 +69,7 @@ const Home = () => {
               <div className="bg-gray-800 rounded-lg overflow-hidden group">
                 <div className="relative">
                   <img
-                    src="/hq720.jpg"
+                    src="https://static1.srcdn.com/wordpress/wp-content/uploads/2024/06/starfield-shattered-space-dlc-footage.jpg"
                     alt="Game News"
                     className="w-full h-44 object-cover group-hover:scale-105 transition duration-300"
                   />
@@ -92,7 +92,7 @@ const Home = () => {
               <div className="bg-gray-800 rounded-lg overflow-hidden group">
                 <div className="relative">
                   <img
-                    src="download.jpg"
+                    src="https://images2.alphacoders.com/123/thumb-1920-1239381.png"
                     alt="Game News"
                     className="w-full h-44 object-cover group-hover:scale-105 transition duration-300"
                   />

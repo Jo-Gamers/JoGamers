@@ -95,6 +95,16 @@ const UsersAdmin = () => {
     });
   };
 
+  const openUpdateModal = (user) => {
+    setSelectedUser(user); // Set the selected user
+    setUpdatedData({
+      username: user.username,
+      email: user.email,
+      role: user.role,
+    }); // Set the updated data for the selected user
+    setModalOpen(true); // Open the modal
+  };
+
   // DataTable Columns
   const columns = [
     { name: "Username", selector: row => row.username, sortable: true },
@@ -106,13 +116,13 @@ const UsersAdmin = () => {
         <div className="flex gap-2">
           <button 
             onClick={() => openUpdateModal(row)}
-            className="px-3 py-1 bg-blue-500 text-white rounded"
+            className="px-3 py-1 bg-[#497174] text-white rounded"
           >
             Update
           </button>
           <button 
             onClick={() => handleDeleteUser(row._id)}
-            className="px-3 py-1 bg-red-500 text-white rounded"
+            className="px-3 py-1 bg-[#EB6440] text-white rounded"
           >
             Delete
           </button>
@@ -129,15 +139,15 @@ const UsersAdmin = () => {
   };
 
   return (
-   <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#EFF5F5] to-[#D6E4E5] p-6">
       <header className="mb-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Users Management</h1>
-            <p className="text-gray-500 mt-1">View and manage user accounts</p>
+            <h1 className="text-3xl font-bold text-[#497174]">Users Management</h1>
+            <p className="text-[#497174] mt-1">View and manage user accounts</p>
           </div>
           <button 
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow flex items-center gap-2 transition-colors"
+            className="px-4 py-2 bg-[#497174] hover:bg-[#497174] text-white rounded-lg shadow flex items-center gap-2 transition-colors"
             onClick={() => {/* Add new user function */}}
           >
             <span className="text-lg">+</span>
@@ -154,7 +164,7 @@ const UsersAdmin = () => {
               <input 
                 type="text" 
                 placeholder="Search users..." 
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#497174] focus:border-transparent"
                 value={searchQuery}
                 onChange={handleSearch}
               />
@@ -167,7 +177,7 @@ const UsersAdmin = () => {
             <select 
               value={roleFilter}
               onChange={handleRoleFilter}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#497174] focus:border-transparent"
             >
               <option value="">All Roles</option>
               <option value="user">User</option>
@@ -176,7 +186,7 @@ const UsersAdmin = () => {
             </select>
             <select 
               onChange={(e) => handleSort(e.target.value, sortDirection)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#497174] focus:border-transparent"
             >
               <option value="">Sort By</option>
               <option value="username">Username</option>
@@ -236,7 +246,7 @@ const UsersAdmin = () => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 animate-fadeIn">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-800">Update User</h2>
+              <h2 className="text-xl font-bold text-[#497174]">Update User</h2>
               <button 
                 onClick={() => setModalOpen(false)}
                 className="text-gray-400 hover:text-gray-600 text-xl"
@@ -247,22 +257,22 @@ const UsersAdmin = () => {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <label className="block text-sm font-medium text-[#497174] mb-1">Username</label>
                 <input 
                   type="text" 
                   value={updatedData.username} 
                   onChange={(e) => setUpdatedData({ ...updatedData, username: e.target.value })} 
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#497174] focus:border-transparent"
                 />
               </div>
               
             
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <label className="block text-sm font-medium text-[#497174] mb-1">Role</label>
                 <select 
                   value={updatedData.role} 
                   onChange={(e) => setUpdatedData({ ...updatedData, role: e.target.value })} 
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#497174] focus:border-transparent"
                 >
                   <option value="user">User</option>
                   <option value="publisher">Publisher</option>
@@ -274,9 +284,9 @@ const UsersAdmin = () => {
                 <input 
                   type="checkbox" 
                   id="active" 
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-[#497174] focus:ring-[#497174] border-gray-300 rounded"
                 />
-                <label htmlFor="active" className="ml-2 block text-sm text-gray-700">
+                <label htmlFor="active" className="ml-2 block text-sm text-[#497174]">
                   Active Account
                 </label>
               </div>
@@ -285,13 +295,13 @@ const UsersAdmin = () => {
             <div className="flex justify-end gap-3 mt-6">
               <button 
                 onClick={() => setModalOpen(false)} 
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 border border-gray-300 text-[#497174] rounded-lg hover:bg-[#D6E4E5] transition-colors"
               >
                 Cancel
               </button>
               <button 
                 onClick={handleUpdateUser} 
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-[#497174] text-white rounded-lg hover:bg-[#497174] transition-colors"
               >
                 Save Changes
               </button>

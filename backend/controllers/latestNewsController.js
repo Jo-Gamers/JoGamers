@@ -1,4 +1,4 @@
-const Article = require("../models/news"); // Ensure you have the correct path to your Article model
+const Article = require("../Models/news"); // Ensure you have the correct path to your Article model
 
 // Function to fetch the latest 6 articles
 exports.getLatestArticles = async (req, res) => {

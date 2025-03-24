@@ -8,6 +8,8 @@ router.post('/create', newsController.createNews);
 
 router.get('/allNews', newsController.getAllNews);
 
+router.get('/allNewsPagination', newsController.getAllNewsPagination);
+
 
 router.get('/allNews/:id', newsController.getNewsById);
 
