@@ -27,6 +27,12 @@ const SidebarAdmin = ({ setSelectedTab }) => {
             >
               <span className="text-lg">News</span>
             </button>
+            <button 
+              onClick={() => setSelectedTab('Reported')}
+              className="w-full text-left flex items-center px-4 py-3 text-gray-300 hover:bg-slate-700 rounded-lg transition-colors duration-200"
+            >
+              <span className="text-lg">ReportedComments</span>
+            </button>
           </div>
 
           {/* Logout Button */}

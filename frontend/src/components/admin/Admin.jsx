@@ -3,9 +3,10 @@ import SidebarAdmin from './SidebarAdmin';
 import UsersAdmin from './UsersAdmin';
 import StatisticsAdmin from './StatisticsAdmin';
 import ArticalsAdmin from './ArticalsAdmin';
+import ReportsComment from './reportsComment';
 
 export default function Admin() {
-    const [selectedTab, setSelectedTab] = useState('Statistics'); // Default tab
+    const [selectedTab, setSelectedTab] = useState('Reported'); // Default tab
 
     // Function to render the selected tab's content
     const renderContent = () => {
@@ -16,6 +17,8 @@ export default function Admin() {
                 return <UsersAdmin />;
             case 'News':
                 return <ArticalsAdmin />;
+            case 'Reported':
+                return <ReportsComment />;
             default:
                 return <StatisticsAdmin />;
         }
